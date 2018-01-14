@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   version: 1.0.0
-  title: home-iot-api
+  title: backup-agent
   description: The API for the EatBacon IOT project
 consumes:
   - application/json
