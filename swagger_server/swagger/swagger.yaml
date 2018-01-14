@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   version: 1.0.0
   title: backup-agent
-  description: The API for the EatBacon IOT project
+  description: safeplan backup agent api
 consumes:
   - application/json
 produces:
