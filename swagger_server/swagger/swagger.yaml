@@ -26,7 +26,7 @@ paths:
     post:
       tags:
       - Device
-      operationId: initializes the device with it's safeplan id
+      operationId: init
       parameters:
       - in: body
         name: device
