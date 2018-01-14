@@ -1,65 +1,68 @@
-swagger: '2.0'
+---
+swagger: "2.0"
 info:
-  version: 1.0.0
-  title: backup-agent
-  description: safeplan backup agent api
+  description: "safeplan backup agent api"
+  version: "1.0.0"
+  title: "backup-agent"
+host: "virtserver.swaggerhub.com"
+basePath: "/safeplan/backup-agent/1.0.0"
+schemes:
+- "https"
 consumes:
-  - application/json
+- "application/json"
 produces:
-  - application/json
+- "application/json"
 paths:
   /device:
     get:
       tags:
-      - Device
-      description: returns the details of the device
-      operationId: getDevice
+      - "Device"
+      description: "returns the details of the device"
+      operationId: "get_device"
+      parameters: []
       responses:
         200:
-          description: All the devices
+          description: "All the devices"
           schema:
-            $ref: '#/definitions/DeviceInfo'
+            $ref: "#/definitions/DeviceInfo"
         400:
-          description: Not initialized yet
-          
+          description: "Not initialized yet"
+      x-swagger-router-controller: "swagger_server.controllers.device_controller"
   /device/initialization:
     post:
       tags:
-      - Device
-      operationId: initializes the device with it's safeplan id
+      - "Device"
+      operationId: "initialize_device"
       parameters:
-      - in: body
-        name: device
+      - in: "body"
+        name: "device"
         required: false
         schema:
-          $ref: '#/definitions/DeviceInitializationInfo'
+          $ref: "#/definitions/DeviceInitializationInfo"
       responses:
         200:
-          description: successfully registered device
-
+          description: "successfully registered device"
+      x-swagger-router-controller: "swagger_server.controllers.device_controller"
 definitions:
   DeviceInfo:
-    type: object
+    type: "object"
     properties:
       id:
-        type: string
-        format: uuid
-        example: '0729a580-2240-11e6-9eb5-0002a5d5c51b'
+        type: "string"
+        format: "uuid"
+        example: "0729a580-2240-11e6-9eb5-0002a5d5c51b"
       initialized_at:
-        type: string
-        format: date-time
-         
+        type: "string"
+        format: "date-time"
+    example:
+      initialized_at: "2000-01-23T04:56:07.000+00:00"
+      id: "0729a580-2240-11e6-9eb5-0002a5d5c51b"
   DeviceInitializationInfo:
-    type: object
+    type: "object"
     properties:
       id:
-        type: string
-        format: uuid
-        example: '0729a580-2240-11e6-9eb5-0002a5d5c51b'
-
-        
-# Added by API Auto Mocking Plugin
-host: virtserver.swaggerhub.com
-basePath: /safeplan/backup-agent/1.0.0
-schemes:
- - https
+        type: "string"
+        format: "uuid"
+        example: "0729a580-2240-11e6-9eb5-0002a5d5c51b"
+    example:
+      id: "0729a580-2240-11e6-9eb5-0002a5d5c51b"
