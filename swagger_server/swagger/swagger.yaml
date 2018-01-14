@@ -19,12 +19,14 @@ paths:
           description: All the devices
           schema:
             $ref: '#/definitions/DeviceInfo'
-              
+        400:
+          description: Not initialized yet
+          
   /device/initialization:
     post:
       tags:
       - Device
-      operationId: initializes the device
+      operationId: initializes the device with it's safeplan id
       parameters:
       - in: body
         name: device
