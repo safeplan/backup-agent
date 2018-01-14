@@ -18,11 +18,7 @@ paths:
         200:
           description: All the devices
           schema:
-            type: array
-            items:
-              type: string
-              format: uri
-              example: http://10.0.0.225:8080
+            $ref: '#/definitions/DeviceInfo'
               
   /device/initialization:
     post:
@@ -41,6 +37,17 @@ paths:
 
 
 definitions:
+  DeviceInfo:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+        example: '0729a580-2240-11e6-9eb5-0002a5d5c51b'
+      initialized_at:
+        type: string
+        format: date-time
+         
   DeviceInitializationInfo:
     type: object
     properties:
