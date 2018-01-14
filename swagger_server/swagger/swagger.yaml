@@ -35,7 +35,6 @@ paths:
         200:
           description: successfully registered device
 
-
 definitions:
   DeviceInfo:
     type: object
