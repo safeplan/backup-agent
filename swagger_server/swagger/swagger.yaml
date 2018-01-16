@@ -13,7 +13,7 @@ paths:
       tags:
       - Device
       description: returns the details of the device
-      operationId: getDevice
+      operationId: device.get_details
       responses:
         200:
           description: All the devices
@@ -21,28 +21,13 @@ paths:
             $ref: '#/definitions/DeviceInfo'
         400:
           description: Not initialized yet
-          
-  /device/initialization:
-    post:
-      tags:
-      - Device
-      operationId: initializeDevice
-      parameters:
-      - in: body
-        name: device
-        required: false
-        schema:
-          $ref: '#/definitions/DeviceInitializationInfo'
-      responses:
-        200:
-          description: successfully registered device
-
+        
 
 definitions:
   DeviceInfo:
     type: object
     properties:
-      id:
+      device_id:
         type: string
         format: uuid
         example: '0729a580-2240-11e6-9eb5-0002a5d5c51b'
@@ -50,17 +35,9 @@ definitions:
         type: string
         format: date-time
          
-  DeviceInitializationInfo:
-    type: object
-    properties:
-      id:
-        type: string
-        format: uuid
-        example: '0729a580-2240-11e6-9eb5-0002a5d5c51b'
-
         
 # Added by API Auto Mocking Plugin
 host: virtserver.swaggerhub.com
-basePath: /safeplan/backup-agent/1.0.0
+basePath: /api/v1
 schemes:
  - https
