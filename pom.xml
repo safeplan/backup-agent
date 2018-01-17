@@ -38,6 +38,7 @@
 						<configuration>
 							<repository>safeplan/backup-agent</repository>
 							<tag>${project.version}</tag>
+							<tag>latest</tag>
 							<useMavenSettingsForAuth>true</useMavenSettingsForAuth>
     					</configuration>
 						 <executions>
