@@ -14,7 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN pip install --no-cache-dir borgbackup
 
-VOLUME ["/backup"]
+VOLUME ["/var/safeplan/backup"]
 
 ENV SAFEPLAN_ID NOT_SET
 
