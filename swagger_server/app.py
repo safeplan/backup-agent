@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Safeplan backup agent
+"""
+
 import logging
 import sys
 import signal
@@ -15,6 +19,7 @@ SCHEDULER = BackgroundScheduler()
 
 def shutdown_handler(signum, frame):
     """stops the scheduler when shutting down"""
+    LOGGER.info("Received signal %d (%s), shutting down scheduler", signum, str(frame))
     SCHEDULER.shutdown(wait=False)
     sys.exit(1)
 
@@ -28,11 +33,10 @@ def start_swagger():
 def worker():
     """Background worker"""
     if not environment.is_initialized():
-        initializer.initialize() 
+        initializer.initialize()
 
 if __name__ == '__main__':
     LOGGER.info("starting safeplan backup agent")
-    
     worker()
     SCHEDULER.start()
     SCHEDULER.add_job(worker, 'interval', seconds=60, id='worker')
