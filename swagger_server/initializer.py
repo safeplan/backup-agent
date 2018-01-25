@@ -7,8 +7,6 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.backends import default_backend
 import environment
 
-
-
 LOGGER = logging.getLogger("initializer")
 
 def initialize():
