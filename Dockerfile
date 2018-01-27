@@ -14,10 +14,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN pip install --no-cache-dir borgbackup
 
-VOLUME ["/var/safeplan/backup"]
+VOLUME ["/var/safeplan/backup" , "/var/safeplan/config", "/var/safeplan/repo", "/var/safeplan/work"]
 
 ENV SAFEPLAN_ID NOT_SET
-
+ENV HOST_IP NOT_SET
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 

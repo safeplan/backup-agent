@@ -69,3 +69,6 @@ target/
 
 #Ipython Notebook
 .ipynb_checkpoints
+
+#backup-agent-web's node modules
+backup-agent-web/node_modules

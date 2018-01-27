@@ -4,15 +4,14 @@ Device controller
 import os
 import logging
 import connexion
+import environment
 
 LOGGER = logging.getLogger("DeviceController")
 
 def get_details():  # noqa: E501
     """returns the current details of the device"""
-    if not 'SAFEPLAN_ID' in os.environ:
-        return {'error' : 'SAFEPLAN_ID not set'}, 500
 
-    return {'device_id' : os.environ['SAFEPLAN_ID']}
+    return {'device_id' : environment.get_safeplan_id()}
 
 
 def initialize(device=None):  # noqa: E501
