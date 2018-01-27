@@ -8,11 +8,11 @@ consumes:
 produces:
   - application/json
 paths:
-  /device:
+  /:
     get:
       tags:
       - Device
-      description: returns the details of the device
+      description: returns the current status of the device
       operationId: device.get_details
       responses:
         200:
@@ -38,6 +38,6 @@ definitions:
         
 # Added by API Auto Mocking Plugin
 host: localhost
-basePath: /api
+basePath: /api/v1
 schemes:
  - https

@@ -12,8 +12,6 @@ from safeplan.models import InitializationInformation
 import borg_commands
 
 LOGGER = logging.getLogger("initializer")
-
-
 SAFEPLAN = DeviceApi()
 
 def has_rsa_keys():
