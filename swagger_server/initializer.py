@@ -11,7 +11,7 @@ from safeplan.apis import DeviceApi
 from safeplan.models import InitializationInformation
 import borg_commands
 
-LOGGER = logging.getLogger("initializer")
+LOGGER = logging.getLogger()
 SAFEPLAN = DeviceApi()
 
 def has_rsa_keys():
@@ -111,11 +111,24 @@ def initialize():
     borg_commands.init(borg_commands.LOCAL_REPO)
     borg_commands.init(borg_commands.REMOTE_REPO)
 
-    LOGGER.info("Local Repository is ok, last modified: %s",
-                borg_commands.get_info(borg_commands.LOCAL_REPO)['repository']['last_modified'])
-  
-    LOGGER.info("Remote Repository is ok, last modified: %s",
-                borg_commands.get_info(borg_commands.REMOTE_REPO)['repository']['last_modified'])
+    try:
+        repo_info = borg_commands.get_info(borg_commands.LOCAL_REPO)
+        LOGGER.info("Local Repository is ok, last modified: %s",
+                    repo_info['repository']['last_modified'])
+    except Exception as ex:
+        LOGGER.error('failed to retrieve status of local repository')
+        LOGGER.exception(ex)
+        return False
+
+    try:
+        repo_info = borg_commands.get_info(borg_commands.REMOTE_REPO)
+        LOGGER.info("Remote Repository is ok, last modified: %s",
+                repo_info['repository']['last_modified'])
+    except Exception as ex:
+        LOGGER.error('failed to retrieve status of remote repository')
+        LOGGER.exception(ex)
+        return False
   
     LOGGER.info("initialized ok.")
+    return True
     

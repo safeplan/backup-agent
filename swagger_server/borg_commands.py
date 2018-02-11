@@ -5,7 +5,7 @@ import subprocess
 import environment
 import json
 
-LOGGER = logging.getLogger("borg")
+LOGGER = logging.getLogger()
 LOCAL_REPO = "{}/backup".format(environment.PATH_LOCAL_REPO)
 REMOTE_REPO = "ssh://{}/repos/{}/backup".format(
     environment.SAFEPLAN_SSH,

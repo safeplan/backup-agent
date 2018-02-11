@@ -3,7 +3,7 @@ import os
 import logging
 import requests
 
-LOGGER = logging.getLogger("environment")
+LOGGER = logging.getLogger()
 
 PATH_BACKUP = "/var/safeplan/backup"
 PATH_CONFIG = "/var/safeplan/config"

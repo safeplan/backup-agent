@@ -6,7 +6,7 @@ import logging
 import connexion
 import environment
 
-LOGGER = logging.getLogger("DeviceController")
+LOGGER = logging.getLogger()
 
 def get_details():  # noqa: E501
     """returns the current details of the device"""
