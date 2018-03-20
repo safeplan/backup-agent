@@ -14,10 +14,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN pip install --no-cache-dir borgbackup
 
-VOLUME ["/var/safeplan/backup" , "/var/safeplan/config", "/var/safeplan/repo", "/var/safeplan/work"]
+VOLUME ["/var/safeplan/backup" , "/var/safeplan/config", "/var/safeplan/repo", "/var/safeplan/work", "/root/.ssh"]
 
 ENV SAFEPLAN_ID NOT_SET
-ENV HOST_IP NOT_SET
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
@@ -26,7 +25,7 @@ COPY requirements.txt /usr/src/app/
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY swagger_server /usr/src/app
-COPY backup-agent-web/dist /usr/src/app/web
+#   COPY backup-agent-web/dist /usr/src/app/web
 
 EXPOSE 8080
 

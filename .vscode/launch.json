@@ -21,6 +21,21 @@
         },
 
         {
+            "name": "Python: app.py",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": false,
+            "pythonPath": "${config:python.pythonPath}",
+            "program": "${workspaceFolder}/swagger_server/app.py",
+            "cwd": "${workspaceFolder}/swagger_server",
+            "env": {},
+            "envFile": "${workspaceFolder}/.env",
+            "debugOptions": [
+                "RedirectOutput"
+            ]
+        },
+
+        {
             "name": "Python: backup-agent",
             "type": "python",
             "request": "launch",

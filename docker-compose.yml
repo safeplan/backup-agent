@@ -1,0 +1,18 @@
+version: "3"
+services:
+  backup-agent:
+    image: safeplan/backup-agent:latest  
+
+    restart: always  
+
+    environment:
+      - SAFEPLAN_ID
+
+    volumes:
+      - ${SAFEPLAN_BACKUP_DIR}:/var/safeplan/backup
+      - ${SAFEPLAN_CONFIG_DIR}:/var/safeplan/config
+      - ${SAFEPLAN_ONSITE_BACKUP_DIR}:/var/safeplan/repo
+      - ${SAFEPLAN_WORK_DIR}:/var/safeplan/work
+      - ${SAFEPLAN_SSH_DIR}:/root/.ssh
+    ports:
+      - 8080:8080  

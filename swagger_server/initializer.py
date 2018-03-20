@@ -3,13 +3,14 @@
 import logging
 import os
 from random import choice
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.backends import default_backend
 import environment
 from safeplan.apis import DeviceApi
 from safeplan.models import InitializationInformation
 import borg_commands
+import socket
+import getpass
+import subprocess
+
 
 LOGGER = logging.getLogger()
 SAFEPLAN = DeviceApi()
@@ -52,33 +53,26 @@ def create_rsa_keys():
         os.makedirs(environment.PATH_CONFIG, 0o700)
 
     if not has_rsa_keys():
+        
         LOGGER.warning("creating new rsa keys")
-        key = rsa.generate_private_key(
-            backend=default_backend(),
-            public_exponent=65537,
-            key_size=2048)
+        process = subprocess.Popen("ssh-keygen -f /root/.ssh/id_rsa -t rsa -N ''", shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process.wait(timeout=30)
+    
+        out, err = process.communicate()
+    
+        if out:
+            LOGGER.error(out.decode("utf-8"))
 
-        # get public key in OpenSSH format
-        public_key = key.public_key().public_bytes(serialization.Encoding.OpenSSH, \
-            serialization.PublicFormat.OpenSSH)
+        if err:
+            LOGGER.info(err.decode("utf-8"))
+    
+        if not process.returncode in [0]:
+            raise ValueError("Unexpected return code from ssh-keygen")
 
-        # get private key in PEM container format
-        pem = key.private_bytes(encoding=serialization.Encoding.PEM,
-                                format=serialization.PrivateFormat.TraditionalOpenSSL,
-                                encryption_algorithm=serialization.NoEncryption())
+        with open("/root/.ssh/config", mode='w') as file:
+            file.writelines("Host *\n    StrictHostKeyChecking no")
 
-        # decode to printable strings
-        private_key_str = pem.decode('utf-8')
-        public_key_str = public_key.decode('utf-8')
 
-        with open(environment.FILENAME_PRIVATE_KEY, mode='w') as file:
-            file.write(private_key_str)
-
-        with open(environment.FILENAME_PUBLIC_KEY, mode='w') as file:
-            file.write(public_key_str)
-
-        os.chmod(environment.FILENAME_PUBLIC_KEY, 0o444)
-        os.chmod(environment.FILENAME_PUBLIC_KEY, 0o400)
     else:
         LOGGER.info("RSA keys have already been created, reusing existing RSA keys")
 
@@ -99,17 +93,29 @@ def initialize():
         os.makedirs("{}/backup".format(environment.PATH_LOCAL_REPO), 0o700)
 
 
+    
+
     LOGGER.info("submitting public key to safeplan server")
     SAFEPLAN.device_initialize(environment.get_safeplan_id(),
                              InitializationInformation(rsa_public_key=environment.get_rsa_public_key()))
 
+    
     os.environ['BORG_CACHE_DIR'] = environment.PATH_WORK    
     os.environ['BORG_BASE_DIR'] = environment.PATH_CONFIG
     os.environ['BORG_PASSPHRASE'] = environment.get_borg_passphrase()
     os.environ['BORG_RELOCATED_REPO_ACCESS_IS_OK'] = 'YES'
 
+    LOGGER.info("BORG_CACHE_DIR is {}".format(os.environ['BORG_CACHE_DIR']))
+    LOGGER.info("BORG_BASE_DIR is {}".format(os.environ['BORG_CACHE_DIR']))
+    LOGGER.info("BORG_PASSPHRASE length is {}".format(len(os.environ['BORG_PASSPHRASE'])))
+    LOGGER.info("BORG_RELOCATED_REPO_ACCESS_IS_OK is {}".format(os.environ['BORG_RELOCATED_REPO_ACCESS_IS_OK']))
+
+
     borg_commands.init(borg_commands.LOCAL_REPO)
+    borg_commands.break_lock(borg_commands.LOCAL_REPO)
+
     borg_commands.init(borg_commands.REMOTE_REPO)
+    borg_commands.break_lock(borg_commands.REMOTE_REPO)
 
     try:
         repo_info = borg_commands.get_info(borg_commands.LOCAL_REPO)

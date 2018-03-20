@@ -37,7 +37,7 @@ def init(repo):
  
 def get_info(repo):
     """
-    Initializes the local repository
+    Get's the repo's info the repository
     """
     cmd = "borg info \
         --json \
@@ -49,11 +49,60 @@ def get_info(repo):
     out, err = process.communicate()
 
     if err:
-        LOGGER.error("Failed to get status from local repo. %s", err.decode("utf-8"))        
+        LOGGER.error("Failed to get status from repo %s. %s", repo, err.decode("utf-8"))        
     return json.loads(out.decode("utf-8"))
 
-def create_archive(repo):
+def get_list(repo):
+    """
+    Lists the  repository
+    """
+    cmd = "borg list --last 10 \
+        --json \
+        {}".format(repo)
+
+    process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process.wait(timeout=30)
+
+    out, err = process.communicate()
+
+    if err:
+        LOGGER.error("Failed to get status from repo %s. %s", repo, err.decode("utf-8")) 
+
+    return json.loads(out.decode("utf-8"))
+
+def break_lock(repo):
+    """
+    Lists the  repository
+    """
+    cmd = "borg break-lock {}".format(repo)
+
+    process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process.wait(timeout=30)
+
+    out, err = process.communicate()
+
+    if err:
+        LOGGER.error("Failed to break lock for repo %s. %s", repo, err.decode("utf-8")) 
+
+    if out:
+        LOGGER.info(out.decode("utf-8"))
+
+               
+    
+def create_archive(repo,archive_name):
     """
     Creates an archive
     """
-    #borg create /path/to/repo::{hostname}-{user}-{now:%Y-%m-%dT%H:%M:%S.%f} ~
+
+    cmd = "borg create --list --stats --show-version --show-rc {repo}::safeplan-{archive_name} {backup_path} > {log_dir}/backup_{archive_name}.log 2>&1 </dev/null".format(
+            repo=repo, 
+            archive_name=archive_name, 
+            backup_path=environment.PATH_BACKUP,
+            log_dir=environment.PATH_WORK)
+
+    process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+    
+    return process
+
+  

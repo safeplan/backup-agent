@@ -2,19 +2,35 @@
 import os
 import logging
 import requests
-
+from pathlib import Path
 LOGGER = logging.getLogger()
 
 PATH_BACKUP = "/var/safeplan/backup"
 PATH_CONFIG = "/var/safeplan/config"
+PATH_SSH = os.path.join(str(Path.home()), ".ssh")
 PATH_LOCAL_REPO = "/var/safeplan/repo"
 PATH_WORK = "/var/safeplan/work"
 
 FILENAME_BORG_PASSPHRASE = "/var/safeplan/config/borg_passphrase"
-FILENAME_PRIVATE_KEY = os.path.join(PATH_CONFIG, "id_rsa")
-FILENAME_PUBLIC_KEY = os.path.join(PATH_CONFIG, "id_rsa.pub")
-
+FILENAME_PRIVATE_KEY = os.path.join(PATH_SSH, "id_rsa")
+FILENAME_PUBLIC_KEY = os.path.join(PATH_SSH, "id_rsa.pub")
+FILENAME_IP_ADDRESS = os.path.join(PATH_CONFIG, "ipaddress")
 SAFEPLAN_SSH = "safeplan-device@backup.safeplan.at:2222"
+
+def check_paths():
+    if not os.access(PATH_BACKUP, os.W_OK):
+        return False, PATH_BACKUP
+
+    if not os.access(PATH_CONFIG, os.W_OK):
+        return False, PATH_CONFIG
+
+    if not os.access(PATH_LOCAL_REPO, os.W_OK):
+        return False, PATH_LOCAL_REPO
+
+    if not os.access(PATH_WORK, os.W_OK):
+        return False, PATH_WORK
+
+    return True, None
 
 def is_online():
     """Checks if the environment is OK so that the safeplan agent can operate"""
@@ -31,18 +47,26 @@ def try_connect(url):
 
 def get_ip_address():
    """
-   Returns the IP address provided by the HOST_IP Environment variable
+   Returns the IP address provided by the ipaddress file located in the config path
 
    on a safeplan device, set it as follows
-   HOST_ID = $(ip -4 addr show eth0| grep -Po 'inet \K[\d.]+')
+   $(ip -4 addr show eth0| grep -Po 'inet \K[\d.]+') > ipadress
    """
 
-   return os.environ['HOST_IP']
+   if os.path.exists(FILENAME_IP_ADDRESS):
+     with open(FILENAME_IP_ADDRESS, 'r') as file:
+        return file.read()
+
+   return None
 
 def get_safeplan_id():
     """
     Returns the assigned safeplan id
     """
+
+    if not 'SAFEPLAN_ID' in os.environ or os.environ['SAFEPLAN_ID'] == 'NOT_SET':
+        return None
+
     return os.environ['SAFEPLAN_ID']
 
 def get_rsa_public_key():
