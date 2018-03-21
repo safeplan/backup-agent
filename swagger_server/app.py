@@ -46,7 +46,6 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
 
-
     #Log (rotated) to backup-agent.log
     logfile = os.path.join(environment.PATH_WORK, "backup-agent.log")
     fileHandler = logging.handlers.RotatingFileHandler(logfile, maxBytes=50000000, backupCount=5)
@@ -59,7 +58,7 @@ if __name__ == '__main__':
     #LOGGER.addHandler(httpHandler)
 
     LOGGER.info("starting safeplan backup agent for device %s",os.environ['SAFEPLAN_ID']) 
-
+ 
     if initializer.initialize():
         SCHEDULER.start()
         SCHEDULER.add_job(do_work, 'interval', seconds=environment.EXECUTE_WORKER_EVERY_SECONDS, id='worker')

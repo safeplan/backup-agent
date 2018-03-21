@@ -22,6 +22,11 @@ offsite_archive_process_check = None
 MAX_AGE_HOURS = 12
 TRY_BACKUP_EVERY_MINUTES=30
 
+def get_current_offsite_process():
+    global offsite_archive_process
+    global offsite_archive_process_started
+
+    return offsite_archive_process, offsite_archive_process_started
 
 def do_work():
     """Background worker"""

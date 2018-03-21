@@ -50,7 +50,6 @@ paths:
           schema:
             $ref: '#/definitions/DeviceInfo'
  
-
 definitions:
   DeviceInfo:
     type: object
@@ -64,8 +63,25 @@ definitions:
         enum:
           - backup
           - idle
+      running_process:
+         type: array
+         items:
+           $ref: '#/definitions/RunningProcess'
       offsite_info:
         type: object
       offsite_list:
         type: object
-              
+
+  RunningProcess:            
+    type: object
+    properties:
+      pid:
+        type: integer
+      running_since:
+        type: string
+        format: date-time
+      type:
+        type: string
+        enum:
+          - offsite
+          - onsite
