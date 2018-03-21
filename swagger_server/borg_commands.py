@@ -6,7 +6,7 @@ import environment
 import json
 
 LOGGER = logging.getLogger()
-LOCAL_REPO = "{}/backup".format(environment.PATH_LOCAL_REPO)
+#LOCAL_REPO = "{}/backup".format(environment.PATH_LOCAL_REPO)
 REMOTE_REPO = "ssh://{}/repos/{}/backup".format(
     environment.SAFEPLAN_SSH,
     environment.get_safeplan_id())
@@ -105,4 +105,31 @@ def create_archive(repo,archive_name):
     
     return process
 
+#def mount():
+#    """
+#    Mounts the local archive
+#    """
+#
+#    cmd = "borg mount --strip-components 3 --foreground {} {}".format(LOCAL_REPO,environment.PATH_HISTORY)
+#
+#    process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#    return process
+
   
+#def unmount():
+#    """
+#    (Evenutally) unmounts the local archive
+#    """
+#
+#    cmd = "borg umount {}".format(environment.PATH_HISTORY)
+#
+#    process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+#    process.wait(timeout=30)
+#    out, err = process.communicate()
+#    
+#    if out:
+#        LOGGER.info(out.decode("utf-8"))
+#    if err:
+#        LOGGER.info(err.decode("utf-8"))
+    
+   

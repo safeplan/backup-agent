@@ -3,12 +3,14 @@ import os
 import logging
 import requests
 from pathlib import Path
+from datetime import datetime
 LOGGER = logging.getLogger()
 
 PATH_BACKUP = "/var/safeplan/backup"
 PATH_CONFIG = "/var/safeplan/config"
+PATH_HISTORY = "/var/safeplan/history/archives"
 PATH_SSH = os.path.join(str(Path.home()), ".ssh")
-PATH_LOCAL_REPO = "/var/safeplan/repo"
+#PATH_LOCAL_REPO = "/var/safeplan/repo"
 PATH_WORK = "/var/safeplan/work"
 
 FILENAME_BORG_PASSPHRASE = "/var/safeplan/config/borg_passphrase"
@@ -17,6 +19,10 @@ FILENAME_PUBLIC_KEY = os.path.join(PATH_SSH, "id_rsa.pub")
 FILENAME_IP_ADDRESS = os.path.join(PATH_CONFIG, "ipaddress")
 SAFEPLAN_SSH = "safeplan-device@backup.safeplan.at:2222"
 
+FORCED_MODE = None
+
+EXECUTE_WORKER_EVERY_SECONDS = 60
+
 def check_paths():
     if not os.access(PATH_BACKUP, os.W_OK):
         return False, PATH_BACKUP
@@ -24,8 +30,8 @@ def check_paths():
     if not os.access(PATH_CONFIG, os.W_OK):
         return False, PATH_CONFIG
 
-    if not os.access(PATH_LOCAL_REPO, os.W_OK):
-        return False, PATH_LOCAL_REPO
+    #if not os.access(PATH_LOCAL_REPO, os.W_OK):
+    #    return False, PATH_LOCAL_REPO
 
     if not os.access(PATH_WORK, os.W_OK):
         return False, PATH_WORK
@@ -53,12 +59,21 @@ def get_ip_address():
    $(ip -4 addr show eth0| grep -Po 'inet \K[\d.]+') > ipadress
    """
 
+   
    if os.path.exists(FILENAME_IP_ADDRESS):
      with open(FILENAME_IP_ADDRESS, 'r') as file:
-        return file.read()
+        ip_address = file.read()
+        if len(ip_address)>0:
+            return ip_address.strip()
 
-   return None
+   return 'localhost'
 
+def get_cc_api_key():
+    if not 'CC_API_KEY' in os.environ :
+        return None
+
+    return os.environ['CC_API_KEY']
+    
 def get_safeplan_id():
     """
     Returns the assigned safeplan id
@@ -82,3 +97,14 @@ def get_borg_passphrase():
     """
     with open(FILENAME_BORG_PASSPHRASE, 'r') as file:
         return file.read()
+
+def get_current_mode():
+    return 'backup' if int(datetime.now().hour) >= 0 and int(datetime.now().hour) <=6 else 'idle'
+
+def set_forced_mode(mode):
+    global FORCED_MODE
+    FORCED_MODE = mode
+
+def get_forced_mode():
+    global FORCED_MODE
+    return FORCED_MODE

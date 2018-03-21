@@ -9,7 +9,7 @@ produces:
   - application/json
 
 
-host: localhost
+host: {{ host }}
 basePath: /api
 schemes:
  - http
@@ -28,7 +28,28 @@ paths:
             $ref: '#/definitions/DeviceInfo'
         400:
           description: Not initialized yet
-        
+  /mode:
+    put:
+      tags:
+      - Device
+      description: Force the device into particular mode
+      operationId: device.set_mode
+      parameters:
+        - name: mode
+          in: query
+          required: true
+          type: string
+          enum:
+            - force_backup
+            - force_idle
+            - default
+  
+      responses:
+        200:
+          description: All the devices
+          schema:
+            $ref: '#/definitions/DeviceInfo'
+ 
 
 definitions:
   DeviceInfo:
@@ -38,11 +59,12 @@ definitions:
         type: string
         format: uuid
         example: '0729a580-2240-11e6-9eb5-0002a5d5c51b'
-      onsite_info:
-        type: object
+      mode:
+        type: string
+        enum:
+          - backup
+          - idle
       offsite_info:
-        type: object
-      onsite_list:
         type: object
       offsite_list:
         type: object

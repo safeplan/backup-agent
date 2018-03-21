@@ -10,7 +10,7 @@ import borg_commands
 import socket
 import getpass
 import subprocess
-
+import worker
 
 LOGGER = logging.getLogger()
 SAFEPLAN = DeviceApi()
@@ -88,18 +88,19 @@ def initialize():
         create_borg_passphrase()
 
 
-    if not os.path.exists("{}/backup".format(environment.PATH_LOCAL_REPO)):
-        LOGGER.warning("Creating local repository")
-        os.makedirs("{}/backup".format(environment.PATH_LOCAL_REPO), 0o700)
+    #if not os.path.exists("{}/backup".format(environment.PATH_LOCAL_REPO)):
+    #    LOGGER.warning("Creating local repository")
+    #    os.makedirs("{}/backup".format(environment.PATH_LOCAL_REPO), 0o700)
 
+    if not os.path.exists(environment.PATH_HISTORY):
+        LOGGER.warning("Creating history path")
+        os.makedirs(environment.PATH_HISTORY, 0o777)
 
-    
 
     LOGGER.info("submitting public key to safeplan server")
     SAFEPLAN.device_initialize(environment.get_safeplan_id(),
                              InitializationInformation(rsa_public_key=environment.get_rsa_public_key()))
 
-    
     os.environ['BORG_CACHE_DIR'] = environment.PATH_WORK    
     os.environ['BORG_BASE_DIR'] = environment.PATH_CONFIG
     os.environ['BORG_PASSPHRASE'] = environment.get_borg_passphrase()
@@ -111,29 +112,22 @@ def initialize():
     LOGGER.info("BORG_RELOCATED_REPO_ACCESS_IS_OK is {}".format(os.environ['BORG_RELOCATED_REPO_ACCESS_IS_OK']))
 
 
-    borg_commands.init(borg_commands.LOCAL_REPO)
-    borg_commands.break_lock(borg_commands.LOCAL_REPO)
+    #borg_commands.init(borg_commands.LOCAL_REPO)
+    #borg_commands.break_lock(borg_commands.LOCAL_REPO)
 
     borg_commands.init(borg_commands.REMOTE_REPO)
     borg_commands.break_lock(borg_commands.REMOTE_REPO)
 
-    try:
-        repo_info = borg_commands.get_info(borg_commands.LOCAL_REPO)
-        LOGGER.info("Local Repository is ok, last modified: %s",
-                    repo_info['repository']['last_modified'])
-    except Exception as ex:
-        LOGGER.error('failed to retrieve status of local repository')
-        LOGGER.exception(ex)
-        return False
+    #try:
+    #    repo_info = borg_commands.get_info(borg_commands.LOCAL_REPO)
+    #    LOGGER.info("Local Repository is ok, last modified: %s",
+    #                repo_info['repository']['last_modified'])
+    #except Exception as ex:
+    #    LOGGER.error('failed to retrieve status of local repository')
+    #    LOGGER.exception(ex)
+    #    return False
 
-    try:
-        repo_info = borg_commands.get_info(borg_commands.REMOTE_REPO)
-        LOGGER.info("Remote Repository is ok, last modified: %s",
-                repo_info['repository']['last_modified'])
-    except Exception as ex:
-        LOGGER.error('failed to retrieve status of remote repository')
-        LOGGER.exception(ex)
-        return False
+    worker.fetch_offsite_status()
   
     LOGGER.info("initialized ok.")
     return True

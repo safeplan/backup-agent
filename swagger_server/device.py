@@ -13,11 +13,19 @@ def get_details():  # noqa: E501
     """returns the current details of the device"""
 
     return {'device_id' : environment.get_safeplan_id(), 
-        'onsite_info' : from_file("onsite-info.json"),
-        'onsite_list' : from_file("onsite-list.json"),
+        'mode' : environment.get_forced_mode() if environment.get_forced_mode() != None else environment.get_current_mode(),
         'offsite_info' : from_file("offsite-info.json"),
         'offsite_list' : from_file("offsite-list.json")}
 
+def set_mode(mode):
+    if mode == 'force_backup':
+        environment.set_forced_mode('backup')
+    elif mode == 'force_idle':
+        environment.set_forced_mode('idle')
+    else:
+        environment.set_forced_mode(None)
+
+    return get_details();
 
 def from_file (f):
     filename = "{}/{}".format(environment.PATH_WORK,f)

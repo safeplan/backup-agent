@@ -13,6 +13,7 @@ services:
       - ${SAFEPLAN_CONFIG_DIR}:/var/safeplan/config
       - ${SAFEPLAN_ONSITE_BACKUP_DIR}:/var/safeplan/repo
       - ${SAFEPLAN_WORK_DIR}:/var/safeplan/work
+      - ${SAFEPLAN_HISTORY_DIR}:/var/safeplan/history
       - ${SAFEPLAN_SSH_DIR}:/root/.ssh
     ports:
       - 8080:8080  
