@@ -179,7 +179,7 @@ def fetch_offsite_status():
             method = "ok" if age < 24 else "fail"
             url = "https://secure.armstrongconsulting.com/cc/api/agent/SAFEPLAN_{}/{}?parentApiKey={}".format(environment.get_safeplan_id(),method,environment.get_cc_api_key())  
             try:
-                data = "Age of repository is {} hours".format(age)
+                data = "As of {}, repository is {} hour(s) old".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), age)
                 requests.post(url=url, data= data)
                 LOGGER.info("Submitted '{}' to control center".format(data))
             except Exception as ex1: 
