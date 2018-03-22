@@ -18,7 +18,7 @@ offsite_archive_process_started = None
 offsite_archive_process_check = None
 
 
-MAX_AGE_HOURS = 12
+TRY_IF_MAX_AGE_HOURS = 12
 TRY_BACKUP_EVERY_MINUTES=30
 
 def get_current_offsite_process():
@@ -112,8 +112,7 @@ def do_work():
                     if forced:
                         do_offsite_backup = True
                     else:
-                        LOGGER.info("offsite backup is {} hours old".format(age))
-                        do_offsite_backup = age > MAX_AGE_HOURS
+                        do_offsite_backup = age < 0 or age > TRY_IF_MAX_AGE_HOURS
 
                     offsite_archive_process_check = datetime.now()
  
@@ -130,7 +129,7 @@ def do_work():
             offsite_archive_process_started = datetime.now()
         else:
             LOGGER.info("No need to start another offsite backup")
-            
+
     ip_address = environment.get_ip_address()
      
     safeplan_server.device_api.device_update_status(
@@ -141,11 +140,14 @@ def do_work():
     LOGGER.info("worker finished.")
 
 
-def get_age_in_hours(repo_info):
+def get_age_in_hours(repo_info, repo_list):
+
+    if repo_list and ('archives' in repo_list) and repo_list['archives'][-1]['archive'].endswith(".checkpoint"):
+        return -1
     try:
         return int((datetime.now() - dateutil.parser.parse(repo_info['repository']['last_modified'])).seconds / 3600)
     except:
-        return 99
+        return -1
 
 def get_minutes_since_last_offsite_archive():
     global offsite_archive_process_check
@@ -159,26 +161,29 @@ def get_minutes_since_last_offsite_archive():
 def fetch_offsite_status():
     try:
         repo_info = borg_commands.get_info(borg_commands.REMOTE_REPO)
-        LOGGER.info("offsite Repository is ok, last modified: %s",
-                    repo_info['repository']['last_modified'])
-
         repo_list = borg_commands.get_list(borg_commands.REMOTE_REPO)
 
         with open("{}/offsite-info.json".format(environment.PATH_WORK), 'w') as outfile:
             json.dump(repo_info, outfile)
 
         with open("{}/offsite-list.json".format(environment.PATH_WORK), 'w') as outfile:
-            json.dump(repo_list, outfile)
+            json.dump(repo_list,outfile)
 
-        age = get_age_in_hours(repo_info)
+
+        age = get_age_in_hours(repo_info,repo_list)
+
+        if age >= 0:
+            description = "As of {}, repository is {} hour(s) old".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), age)
+        else:
+            description = "A backup process has not completed yet"
+
+        LOGGER.info(description)
 
         if environment.get_cc_api_key():
-            method = "ok" if age < 24 else "fail"
+            method = "ok" if age >= 0 and age < 24 else "fail"
             url = "https://secure.armstrongconsulting.com/cc/api/agent/SAFEPLAN_{}/{}?parentApiKey={}".format(environment.get_safeplan_id(),method,environment.get_cc_api_key())  
             try:
-                data = "As of {}, repository is {} hour(s) old".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), age)
-                requests.post(url=url, data= data)
-                LOGGER.info("Submitted '{}' to control center".format(data))
+                requests.post(url=url, data= description)
             except Exception as ex1: 
                 LOGGER.error('Failed to report to control center')
                 LOGGER.exception(ex1)    
