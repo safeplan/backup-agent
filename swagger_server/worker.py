@@ -52,7 +52,7 @@ def do_work():
     if offsite_archive_process != None:
         rc = offsite_archive_process.poll()
         if rc is None:
-            LOGGER.info('offsite archive process running since %s, pid %d', format_time(offsite_archive_process_started),offsite_archive_process.pid)
+            LOGGER.info('offsite archive process running since %s, pid %d', offsite_archive_process_started.strftime("%Y-%m-%dT%H:%M:%S"),offsite_archive_process.pid)
         else:
             offsite_archive_process = None
             offsite_archive_process_just_finished = True
@@ -126,11 +126,11 @@ def do_work():
 
         if do_offsite_backup:
             LOGGER.info("Starting offsite backup")
-            offsite_archive_process = borg_commands.create_archive(borg_commands.REMOTE_REPO,"offsite_" + current_timestamp) 
+            offsite_archive_process = borg_commands.create_archive(borg_commands.REMOTE_REPO,"offsite_" + current_timestamp.strftime("%Y-%m-%dT%H:%M:%S")) 
             offsite_archive_process_started = datetime.now()
         else:
             LOGGER.info("No need to start another offsite backup")
-
+x
     ip_address = environment.get_ip_address()
      
     safeplan_server.device_api.device_update_status(
@@ -140,9 +140,6 @@ def do_work():
 
     LOGGER.info("worker finished.")
 
-    
-def format_time(t):
-    return t.strftime("%Y-%m-%dT%H:%M:%S")
 
 def get_age_in_hours(repo_info):
     try:
