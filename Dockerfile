@@ -28,6 +28,7 @@ COPY swagger_server /usr/src/app
 #   COPY backup-agent-web/dist /usr/src/app/web
 
 EXPOSE 8080
+ENV TZ=Europe/Vienna
 
 ENTRYPOINT ["python3"]
 
