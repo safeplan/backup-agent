@@ -130,7 +130,7 @@ def do_work():
             offsite_archive_process_started = datetime.now()
         else:
             LOGGER.info("No need to start another offsite backup")
-x
+            
     ip_address = environment.get_ip_address()
      
     safeplan_server.device_api.device_update_status(
