@@ -34,17 +34,19 @@ class StatusInformation(object):
         'as_of': 'datetime',
         'ip_address': 'str',
         'repository_path': 'str',
-        'status': 'str'
+        'status': 'str',
+        'server_time': 'datetime'
     }
 
     attribute_map = {
         'as_of': 'as_of',
         'ip_address': 'ip_address',
         'repository_path': 'repository_path',
-        'status': 'status'
+        'status': 'status',
+        'server_time':'server_time'
     }
 
-    def __init__(self, as_of=None, ip_address=None, repository_path=None, status=None):
+    def __init__(self, as_of=None, ip_address=None, repository_path=None, status=None, server_time=None):
         """
         StatusInformation - a model defined in Swagger
         """
@@ -53,6 +55,7 @@ class StatusInformation(object):
         self._ip_address = None
         self._repository_path = None
         self._status = None
+        self._server_time = None
 
         if as_of is not None:
           self.as_of = as_of
@@ -62,6 +65,8 @@ class StatusInformation(object):
           self.repository_path = repository_path
         if status is not None:
           self.status = status
+        if server_time is not None:
+          self.server_time = server_time
 
     @property
     def as_of(self):
@@ -83,6 +88,27 @@ class StatusInformation(object):
         """
 
         self._as_of = as_of
+
+    @property
+    def server_time(self):
+        """
+        Gets the server_time of this StatusInformation.
+
+        :return: The server_time of this StatusInformation.
+        :rtype: datetime
+        """
+        return self._server_time
+
+    @server_time.setter
+    def server_time(self, server_time):
+        """
+        Sets the server_time of this StatusInformation.
+
+        :param server_time: The server_time of this StatusInformation.
+        :type: str
+        """
+
+        self._server_time = server_time
 
     @property
     def ip_address(self):

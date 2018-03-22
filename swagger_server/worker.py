@@ -38,8 +38,13 @@ def do_work():
     global TRY_BACKUP_EVERY_MINUTES
     global offsite_archive_process_started
    
+    device_details = SAFEPLAN.device_get_details(environment.get_safeplan_id())
 
-    current_timestamp = format_time(datetime.now())
+    if not device_details.status in ['in_operation', 'initialized']:
+        LOGGER.error("Device's status is '{}'. Aborting.".format(device_details.status))
+        return
+
+    current_timestamp = datetime.now()
  
     # Check the offsite archive process's status
     offsite_archive_process_just_finished = False

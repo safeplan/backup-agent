@@ -4,6 +4,8 @@ import logging
 import requests
 from pathlib import Path
 from datetime import datetime
+from dateutil import tz
+
 LOGGER = logging.getLogger()
 
 PATH_BACKUP = "/var/safeplan/backup"
@@ -99,7 +101,10 @@ def get_borg_passphrase():
         return file.read()
 
 def get_current_mode():
-    return 'backup' if int(datetime.now().hour) >= 0 and int(datetime.now().hour) <=6 else 'idle'
+    """
+    backup if between 00:00 and 6:00 am, idle otherwise
+    """
+    return 'backup' if int(datetime.now().hour) >= 0 and int(datetime.now().hour) <= 6 else 'idle'
 
 def set_forced_mode(mode):
     global FORCED_MODE
