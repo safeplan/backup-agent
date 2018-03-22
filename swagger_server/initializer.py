@@ -4,16 +4,15 @@ import logging
 import os
 from random import choice
 import environment
-from safeplan.apis import DeviceApi
 from safeplan.models import InitializationInformation
 import borg_commands
 import socket
 import getpass
 import subprocess
 import worker
+import safeplan_server
 
 LOGGER = logging.getLogger()
-SAFEPLAN = DeviceApi()
 
 def has_rsa_keys():
     """
@@ -87,7 +86,6 @@ def initialize():
     if not has_borg_passphrase():
         create_borg_passphrase()
 
-
     #if not os.path.exists("{}/backup".format(environment.PATH_LOCAL_REPO)):
     #    LOGGER.warning("Creating local repository")
     #    os.makedirs("{}/backup".format(environment.PATH_LOCAL_REPO), 0o700)
@@ -98,7 +96,7 @@ def initialize():
 
 
     LOGGER.info("submitting public key to safeplan server")
-    SAFEPLAN.device_initialize(environment.get_safeplan_id(),
+    safeplan_server.device_api.device_initialize(environment.get_safeplan_id(),
                              InitializationInformation(rsa_public_key=environment.get_rsa_public_key()))
 
     os.environ['BORG_CACHE_DIR'] = environment.PATH_WORK    

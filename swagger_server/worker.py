@@ -2,7 +2,7 @@
 
 import logging
 import environment
-from safeplan.apis import DeviceApi
+import safeplan_server
 from safeplan.models import DeviceStatus
 import os
 from datetime import datetime
@@ -12,7 +12,6 @@ import dateutil
 import requests
 
 LOGGER = logging.getLogger()
-SAFEPLAN = DeviceApi()
 
 offsite_archive_process = None
 offsite_archive_process_started = None
@@ -38,7 +37,8 @@ def do_work():
     global TRY_BACKUP_EVERY_MINUTES
     global offsite_archive_process_started
    
-    device_details = SAFEPLAN.device_get_details(environment.get_safeplan_id())
+    
+    device_details = safeplan_server.device_api.device_get_details(environment.get_safeplan_id())
 
     if not device_details.status in ['in_operation', 'initialized']:
         LOGGER.error("Device's status is '{}'. Aborting.".format(device_details.status))
@@ -133,7 +133,7 @@ def do_work():
 
     ip_address = environment.get_ip_address()
      
-    SAFEPLAN.device_update_status(
+    safeplan_server.device_api.device_update_status(
         environment.get_safeplan_id(),
         DeviceStatus(ip_address = ip_address))
 

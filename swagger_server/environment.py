@@ -16,6 +16,7 @@ PATH_SSH = os.path.join(str(Path.home()), ".ssh")
 PATH_WORK = "/var/safeplan/work"
 
 FILENAME_BORG_PASSPHRASE = "/var/safeplan/config/borg_passphrase"
+FILENAME_DEVICE_SECRET = "/var/safeplan/config/device_secret"
 FILENAME_PRIVATE_KEY = os.path.join(PATH_SSH, "id_rsa")
 FILENAME_PUBLIC_KEY = os.path.join(PATH_SSH, "id_rsa.pub")
 FILENAME_IP_ADDRESS = os.path.join(PATH_CONFIG, "ipaddress")
@@ -25,15 +26,17 @@ FORCED_MODE = None
 
 EXECUTE_WORKER_EVERY_SECONDS = 60
 
+
+
 def check_paths():
     if not os.access(PATH_BACKUP, os.W_OK):
         return False, PATH_BACKUP
 
+    if not os.access(FILENAME_DEVICE_SECRET, os.R_OK):
+        return False, FILENAME_DEVICE_SECRET
+
     if not os.access(PATH_CONFIG, os.W_OK):
         return False, PATH_CONFIG
-
-    #if not os.access(PATH_LOCAL_REPO, os.W_OK):
-    #    return False, PATH_LOCAL_REPO
 
     if not os.access(PATH_WORK, os.W_OK):
         return False, PATH_WORK
@@ -99,6 +102,17 @@ def get_borg_passphrase():
     """
     with open(FILENAME_BORG_PASSPHRASE, 'r') as file:
         return file.read()
+
+def get_device_secret():
+    """
+    Returns the device's public key
+    """
+
+    if os.path.exists(FILENAME_DEVICE_SECRET):
+        with open(FILENAME_DEVICE_SECRET, 'r') as file:
+            return file.read().strip()
+    
+    return None
 
 def get_current_mode():
     """

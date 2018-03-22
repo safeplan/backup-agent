@@ -1,9 +1,10 @@
 # coding: utf-8
 
+# flake8: noqa
 """
     device-api
 
-    safeplan device api
+    safeplan device api  # noqa: E501
 
     OpenAPI spec version: 1.0.0
     
@@ -14,6 +15,6 @@
 from __future__ import absolute_import
 
 # import models into model package
-from .device_status import DeviceStatus
-from .initialization_information import InitializationInformation
-from .status_information import StatusInformation
+from safeplan.models.device_status import DeviceStatus
+from safeplan.models.initialization_information import InitializationInformation
+from safeplan.models.status_information import StatusInformation
