@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         pkg-config \
 	&& rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir borgbackup
+RUN pip install --no-cache-dir borgbackup==1.1.4
 
 VOLUME ["/var/safeplan/backup" , "/var/safeplan/config", "/var/safeplan/repo", "/var/safeplan/work", "/root/.ssh" , "/var/safeplan/history"]
 
