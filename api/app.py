@@ -52,11 +52,6 @@ if __name__ == '__main__':
     fileHandler.setFormatter(logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s"))
     LOGGER.addHandler(fileHandler)
 
-    #TODO: http log handler
-    #httpHandler = HttpLoggingHandler()
-    #httpHandler.setFormatter(JsonLogFormatter())
-    #LOGGER.addHandler(httpHandler)
-
     LOGGER.info("starting safeplan backup agent for device %s",os.environ['SAFEPLAN_ID']) 
  
     if initializer.initialize():
