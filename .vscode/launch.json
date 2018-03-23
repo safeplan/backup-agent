@@ -12,7 +12,7 @@
             "stopOnEntry": false,
             "pythonPath": "${config:python.pythonPath}",
             "program": "${file}",
-            "cwd": "${workspaceFolder}/swagger_server",
+            "cwd": "${workspaceFolder}/api",
             "env": {},
             "envFile": "${workspaceFolder}/.env",
             "debugOptions": [
@@ -26,8 +26,8 @@
             "request": "launch",
             "stopOnEntry": false,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceFolder}/swagger_server/app.py",
-            "cwd": "${workspaceFolder}/swagger_server",
+            "program": "${workspaceFolder}/api/app.py",
+            "cwd": "${workspaceFolder}/api",
             "env": {},
             "envFile": "${workspaceFolder}/.env",
             "debugOptions": [
@@ -41,8 +41,8 @@
             "request": "launch",
             "stopOnEntry": false,
             "pythonPath": "${config:python.pythonPath}",
-            "program": "${workspaceFolder}/swagger_server/app.py",
-            "cwd": "${workspaceFolder}/swagger_server",
+            "program": "${workspaceFolder}/api/app.py",
+            "cwd": "${workspaceFolder}/api",
             "env": {},
             "envFile": "${workspaceFolder}/.env",
             "debugOptions": [
