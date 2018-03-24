@@ -86,10 +86,6 @@ def initialize():
     if not has_borg_passphrase():
         create_borg_passphrase()
 
-    #if not os.path.exists("{}/backup".format(environment.PATH_LOCAL_REPO)):
-    #    LOGGER.warning("Creating local repository")
-    #    os.makedirs("{}/backup".format(environment.PATH_LOCAL_REPO), 0o700)
-
     if not os.path.exists(environment.PATH_HISTORY):
         LOGGER.warning("Creating history path")
         os.makedirs(environment.PATH_HISTORY, 0o777)
@@ -109,21 +105,7 @@ def initialize():
     LOGGER.info("BORG_PASSPHRASE length is {}".format(len(os.environ['BORG_PASSPHRASE'])))
     LOGGER.info("BORG_RELOCATED_REPO_ACCESS_IS_OK is {}".format(os.environ['BORG_RELOCATED_REPO_ACCESS_IS_OK']))
 
-
-    #borg_commands.init(borg_commands.LOCAL_REPO)
-    #borg_commands.break_lock(borg_commands.LOCAL_REPO)
-
     borg_commands.init(borg_commands.REMOTE_REPO)
-    borg_commands.break_lock(borg_commands.REMOTE_REPO)
-
-    #try:
-    #    repo_info = borg_commands.get_info(borg_commands.LOCAL_REPO)
-    #    LOGGER.info("Local Repository is ok, last modified: %s",
-    #                repo_info['repository']['last_modified'])
-    #except Exception as ex:
-    #    LOGGER.error('failed to retrieve status of local repository')
-    #    LOGGER.exception(ex)
-    #    return False
 
     worker.fetch_offsite_status()
   

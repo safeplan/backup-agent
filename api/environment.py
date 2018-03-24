@@ -12,7 +12,6 @@ PATH_BACKUP = "/var/safeplan/backup"
 PATH_CONFIG = "/var/safeplan/config"
 PATH_HISTORY = "/var/safeplan/history/archives"
 PATH_SSH = os.path.join(str(Path.home()), ".ssh")
-#PATH_LOCAL_REPO = "/var/safeplan/repo"
 PATH_WORK = "/var/safeplan/work"
 
 FILENAME_BORG_PASSPHRASE = "/var/safeplan/config/borg_passphrase"
