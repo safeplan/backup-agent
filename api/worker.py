@@ -15,38 +15,24 @@ LOGGER = logging.getLogger()
 
 offsite_archive_process = None
 offsite_archive_process_started = None
-offsite_archive_process_check = None
+last_modified = None
+MAX_AGE_SECONDS= 12 * 3600
 
-
-TRY_IF_MAX_AGE_HOURS = 12
-TRY_BACKUP_EVERY_MINUTES=30
-
-def get_current_offsite_process():
-    global offsite_archive_process
-    global offsite_archive_process_started
-
-    return offsite_archive_process, offsite_archive_process_started
 
 def do_work():
     """Background worker"""
     LOGGER.info("starting worker.")
 
-    global offsite_archive_process_check
-    global MAX_AGE_HOURS
     global offsite_archive_process
-    global TRY_BACKUP_EVERY_MINUTES
     global offsite_archive_process_started
-   
-    
+    global last_modified
+
     device_details = safeplan_server.device_api.device_get_details(environment.get_safeplan_id())
 
     if not device_details.status in ['in_operation', 'initialized']:
         LOGGER.error("Device's status is '{}'. Aborting.".format(device_details.status))
         return
-
-    current_timestamp = datetime.now()
- 
-    # Check the offsite archive process's status
+      
     offsite_archive_process_just_finished = False
 
     if offsite_archive_process != None:
@@ -56,79 +42,39 @@ def do_work():
         else:
             offsite_archive_process = None
             offsite_archive_process_just_finished = True
+    
+    if not offsite_archive_process:
+        current_timestamp = datetime.now()
 
-    current_mode = environment.get_current_mode()
-    archive_process_is_active = offsite_archive_process != None
-    forced = False
+        if offsite_archive_process_just_finished or not last_modified:
+            last_modified = fetch_offsite_status()
 
-    #if the current mode is 'backup' and 'idle' is requested manually switch mode.
-    if environment.get_forced_mode() == 'backup':
-        if (current_mode == 'backup'):
-            # backup is requested, however we are in backup mode -> reset forced mode
+        if environment.get_forced_mode():
+            action = environment.get_forced_mode()
             environment.set_forced_mode(None)
-        else:    
-            if (current_mode == 'idle'):
-                if archive_process_is_active:
-                    LOGGER.info("Switching into 'backup' has been requested. Waiting until the currently running archive process terminate.")
-                else:
-                    forced = True
-                    current_mode = 'backup'
-                    LOGGER.info("Forcing current_mode from 'idle' to 'backup'")
-                    environment.set_forced_mode(None)
-                   
-
-    if environment.get_forced_mode() == 'idle':
-        if (current_mode == 'idle'):
-            # idle is requested, however we are in idle mode -> reset forced mode
-            environment.set_forced_mode(None)
-        else:    
-            if (current_mode == 'backup'):
-                if archive_process_is_active:
-                    LOGGER.info("Switching into 'idle' has been requested. Waiting until the currently running archive process terminate.")
-                else:
-                    current_mode = 'backup'
-                    LOGGER.info("Forcing current_mode from 'backup' to 'idle'")
-                    forced = True
-                    environment.set_forced_mode(None)
-
-
-    LOGGER.info("Current mode is {}".format(current_mode))
-
-    if offsite_archive_process_just_finished:
-        fetch_offsite_status()
-
-    if current_mode == 'backup':
-
-        do_offsite_backup =False
-        if offsite_archive_process == None:
-            if forced or get_minutes_since_last_offsite_archive() > TRY_BACKUP_EVERY_MINUTES:
-                try:                
-                    #Init the repo (if it does not already exist)
-                    borg_commands.init(borg_commands.REMOTE_REPO)
-                    borg_commands.break_lock(borg_commands.REMOTE_REPO)
-
-                    age = fetch_offsite_status()
-
-                    if forced:
-                        do_offsite_backup = True
-                    else:
-                        do_offsite_backup = age < 0 or age > TRY_IF_MAX_AGE_HOURS
-
-                    offsite_archive_process_check = datetime.now()
- 
-                except Exception as ex:
-                    LOGGER.error('failed to retrieve status of offsite repository')
-                    LOGGER.exception(ex)
-            else:
-                LOGGER.info('Last offsite backup attempt is {} minutes ago. Will try again later'.format(get_minutes_since_last_offsite_archive()))
-                
-
-        if do_offsite_backup:
-            LOGGER.info("Starting offsite backup")
-            offsite_archive_process = borg_commands.create_archive(borg_commands.REMOTE_REPO,"offsite_" + current_timestamp.strftime("%Y-%m-%dT%H:%M:%S")) 
-            offsite_archive_process_started = datetime.now()
         else:
-            LOGGER.info("No need to start another offsite backup")
+            if not last_modified:
+                action = 'backup'
+            elif environment.get_current_mode() == 'backup' and (datetime.now() - last_modified).seconds > MAX_AGE_SECONDS:
+                action = 'backup'
+            else:
+                action = 'idle'
+
+
+        LOGGER.info("worker is in mode {}".format(action))
+
+        if action == 'backup':
+            try:                
+                LOGGER.info("Starting offsite backup")
+                borg_commands.break_lock(borg_commands.REMOTE_REPO)
+                offsite_archive_process = borg_commands.create_archive(borg_commands.REMOTE_REPO,"offsite_" + current_timestamp.strftime("%Y-%m-%dT%H:%M:%S")) 
+                offsite_archive_process_started = datetime.now()
+                LOGGER.info("Backup process has pid {}".format(offsite_archive_process.pid))
+
+            except Exception as ex:
+                LOGGER.error('failed to start offsite backup process')
+                LOGGER.exception(ex)
+            
 
     ip_address = environment.get_ip_address()
      
@@ -140,22 +86,14 @@ def do_work():
     LOGGER.info("worker finished.")
 
 
-def get_age_in_hours(repo_info, repo_list):
+def get_last_modified(repo_info, repo_list):
 
     if repo_list and ('archives' in repo_list) and repo_list['archives'][-1]['archive'].endswith(".checkpoint"):
-        return -1
+        return None
     try:
-        return int((datetime.now() - dateutil.parser.parse(repo_info['repository']['last_modified'])).seconds / 3600)
+        return dateutil.parser.parse(repo_info['repository']['last_modified'])
     except:
-        return -1
-
-def get_minutes_since_last_offsite_archive():
-    global offsite_archive_process_check
-    
-    if not offsite_archive_process_check:
-        return 999
-
-    return int((datetime.now() - offsite_archive_process_check).seconds / 60)
+        return None
 
 
 def fetch_offsite_status():
@@ -169,14 +107,15 @@ def fetch_offsite_status():
         with open("{}/offsite-list.json".format(environment.PATH_WORK), 'w') as outfile:
             json.dump(repo_list,outfile)
 
+        last_modified = get_last_modified(repo_info,repo_list)
 
-        age = get_age_in_hours(repo_info,repo_list)
+        age = int((datetime.now() - last_modified).seconds / 3600) if last_modified else -1
 
         if age >= 0:
-            description = "As of {}, repository is {} hour(s) old".format(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), age)
+            description = "Repository last modified at {}. As of {} it's {} hour(s) old".format(last_modified.strftime("%Y-%m-%d %H:%M:%S"),datetime.now().strftime("%Y-%m-%d %H:%M:%S"), age)
         else:
-            description = "A backup process has not completed yet"
-
+            description = "A complete backup process has not yet completed"
+    
         LOGGER.info(description)
 
         if environment.get_cc_api_key():
@@ -188,8 +127,13 @@ def fetch_offsite_status():
                 LOGGER.error('Failed to report to control center')
                 LOGGER.exception(ex1)    
 
-        return  age
+        return  last_modified
     except Exception as ex:
         LOGGER.error('failed to retrieve status of offsite repository')
         LOGGER.exception(ex)
-        
+
+def get_current_offsite_process():
+    global offsite_archive_process
+    global offsite_archive_process_started
+
+    return offsite_archive_process, offsite_archive_process_started

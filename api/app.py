@@ -5,8 +5,6 @@ Safeplan backup agent
 
 import logging
 import logging.handlers
-from logutils import HttpLoggingHandler
-from logutils import JsonLogFormatter
 import os
 import sys
 import signal
