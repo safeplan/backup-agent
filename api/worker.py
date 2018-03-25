@@ -16,6 +16,7 @@ LOGGER = logging.getLogger()
 offsite_archive_process = None
 offsite_archive_process_started = None
 last_backup_timestamp = None
+last_modified = None
 MAX_AGE_SECONDS= 12 * 3600
 
 
@@ -26,6 +27,7 @@ def do_work():
     global offsite_archive_process
     global offsite_archive_process_started
     global last_backup_timestamp
+    global last_modified
 
     device_details = device_api.device_get_details(environment.get_safeplan_id())
     executed_operation = 'noop'
@@ -83,6 +85,7 @@ def do_work():
                 LOGGER.info("Starting to prune repository")
                 borg_commands.break_lock(borg_commands.REMOTE_REPO)
                 offsite_archive_process = borg_commands.prune(borg_commands.REMOTE_REPO)
+                offsite_archive_process_started = datetime.now()
                 LOGGER.info("Prune process has pid {}".format(offsite_archive_process.pid))
                 executed_operation = 'started_prune'
             except Exception as ex:
