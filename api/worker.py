@@ -113,6 +113,7 @@ def get_last_backed_up (repo_list):
 def fetch_offsite_status():
     try:
 
+        borg_commands.break_lock(borg_commands.REMOTE_REPO)
         repo_info = borg_commands.get_info(borg_commands.REMOTE_REPO)
         repo_list = borg_commands.get_list(borg_commands.REMOTE_REPO)
 
