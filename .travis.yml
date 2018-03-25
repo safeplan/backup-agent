@@ -18,4 +18,8 @@ script:
   - pytest
 
 after_success:
+<<<<<<< HEAD
   - coveralls --base_dir api
+=======
+  - coveralls
+>>>>>>> d926348e1eb1b23cda0af444d6209f9f947b9416
