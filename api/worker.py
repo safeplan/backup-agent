@@ -127,7 +127,11 @@ def fetch_offsite_status():
             json.dump(repo_list,outfile)
 
         last_backup_timestamp = get_last_backed_up(repo_list)
-        last_modified = dateutil.parser.parse(repo_info['repository']['last_modified'])
+        last_modified = None
+        try:
+            last_modified = dateutil.parser.parse(repo_info['repository']['last_modified'])
+        except:
+            pass
 
         age = int((datetime.now() - last_backup_timestamp).seconds / 3600) if last_backup_timestamp else -1
 
