@@ -117,7 +117,12 @@ def get_current_mode():
     """
     backup if between 00:00 and 6:00 am, idle otherwise
     """
-    return 'backup' if int(datetime.now().hour) >= 0 and int(datetime.now().hour) <= 6 else 'idle'
+    if int(datetime.now().hour) >= 0 and int(datetime.now().hour) < 4:
+      return 'backup'
+    elif int(datetime.now().hour) >=5 and int(datetime.now().hour) < 6:
+      return 'cleanup'
+    else:
+      return 'idle'
 
 def set_forced_mode(mode):
     global FORCED_MODE

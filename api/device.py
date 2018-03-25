@@ -28,6 +28,8 @@ def set_mode(mode):
         environment.set_forced_mode('backup')
     elif mode == 'force_idle':
         environment.set_forced_mode('idle')
+    elif mode == 'force_cleanup':
+        environment.set_forced_mode('cleanup')
     else:
         environment.set_forced_mode(None)
 
