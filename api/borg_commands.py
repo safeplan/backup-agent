@@ -110,7 +110,7 @@ def prune(repo):
     Prunes an archive
     """
 
-    cmd = "borg prune -v --list --keep-daily=30 --keep-weekly=52 --keep-monthly=84 --keep-yearly=30 {repo}  > {log_dir}/backup_prune.log 2>&1 </dev/null".format(
+    cmd = "borg prune -v --list --show-rc --keep-daily=30 --keep-weekly=52 --keep-monthly=84 --keep-yearly=30 {repo}  > {log_dir}/backup_prune.log 2>&1 </dev/null".format(
             repo=repo, 
             log_dir=environment.PATH_WORK)
 
