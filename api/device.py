@@ -29,7 +29,7 @@ def set_mode(mode):
     elif mode == 'force_idle':
         environment.set_forced_mode('idle')
     elif mode == 'force_cleanup':
-        environment.set_forced_mode('cleanup')
+        environment.set_forced_mode('prune')
     else:
         environment.set_forced_mode(None)
 
