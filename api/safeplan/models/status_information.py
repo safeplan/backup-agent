@@ -35,7 +35,12 @@ class StatusInformation(object):
         'status': 'str',
         'as_of': 'datetime',
         'ip_address': 'str',
-        'repository_path': 'str'
+        'repository_path': 'str',
+        'last_backup': 'datetime',
+        'last_pruned': 'datetime',
+        'size': 'int',
+        'last_action': 'str',
+        'last_action_as_of': 'datetime'
     }
 
     attribute_map = {
@@ -43,10 +48,15 @@ class StatusInformation(object):
         'status': 'status',
         'as_of': 'as_of',
         'ip_address': 'ip_address',
-        'repository_path': 'repository_path'
+        'repository_path': 'repository_path',
+        'last_backup': 'last_backup',
+        'last_pruned': 'last_pruned',
+        'size': 'size',
+        'last_action': 'last_action',
+        'last_action_as_of': 'last_action_as_of'
     }
 
-    def __init__(self, server_time=None, status=None, as_of=None, ip_address=None, repository_path=None):  # noqa: E501
+    def __init__(self, server_time=None, status=None, as_of=None, ip_address=None, repository_path=None, last_backup=None, last_pruned=None, size=None, last_action=None, last_action_as_of=None):  # noqa: E501
         """StatusInformation - a model defined in Swagger"""  # noqa: E501
 
         self._server_time = None
@@ -54,6 +64,11 @@ class StatusInformation(object):
         self._as_of = None
         self._ip_address = None
         self._repository_path = None
+        self._last_backup = None
+        self._last_pruned = None
+        self._size = None
+        self._last_action = None
+        self._last_action_as_of = None
         self.discriminator = None
 
         if server_time is not None:
@@ -66,6 +81,16 @@ class StatusInformation(object):
             self.ip_address = ip_address
         if repository_path is not None:
             self.repository_path = repository_path
+        if last_backup is not None:
+            self.last_backup = last_backup
+        if last_pruned is not None:
+            self.last_pruned = last_pruned
+        if size is not None:
+            self.size = size
+        if last_action is not None:
+            self.last_action = last_action
+        if last_action_as_of is not None:
+            self.last_action_as_of = last_action_as_of
 
     @property
     def server_time(self):
@@ -177,6 +202,111 @@ class StatusInformation(object):
         """
 
         self._repository_path = repository_path
+
+    @property
+    def last_backup(self):
+        """Gets the last_backup of this StatusInformation.  # noqa: E501
+
+
+        :return: The last_backup of this StatusInformation.  # noqa: E501
+        :rtype: datetime
+        """
+        return self._last_backup
+
+    @last_backup.setter
+    def last_backup(self, last_backup):
+        """Sets the last_backup of this StatusInformation.
+
+
+        :param last_backup: The last_backup of this StatusInformation.  # noqa: E501
+        :type: datetime
+        """
+
+        self._last_backup = last_backup
+
+    @property
+    def last_pruned(self):
+        """Gets the last_pruned of this StatusInformation.  # noqa: E501
+
+
+        :return: The last_pruned of this StatusInformation.  # noqa: E501
+        :rtype: datetime
+        """
+        return self._last_pruned
+
+    @last_pruned.setter
+    def last_pruned(self, last_pruned):
+        """Sets the last_pruned of this StatusInformation.
+
+
+        :param last_pruned: The last_pruned of this StatusInformation.  # noqa: E501
+        :type: datetime
+        """
+
+        self._last_pruned = last_pruned
+
+    @property
+    def size(self):
+        """Gets the size of this StatusInformation.  # noqa: E501
+
+
+        :return: The size of this StatusInformation.  # noqa: E501
+        :rtype: int
+        """
+        return self._size
+
+    @size.setter
+    def size(self, size):
+        """Sets the size of this StatusInformation.
+
+
+        :param size: The size of this StatusInformation.  # noqa: E501
+        :type: int
+        """
+
+        self._size = size
+
+    @property
+    def last_action(self):
+        """Gets the last_action of this StatusInformation.  # noqa: E501
+
+
+        :return: The last_action of this StatusInformation.  # noqa: E501
+        :rtype: str
+        """
+        return self._last_action
+
+    @last_action.setter
+    def last_action(self, last_action):
+        """Sets the last_action of this StatusInformation.
+
+
+        :param last_action: The last_action of this StatusInformation.  # noqa: E501
+        :type: str
+        """
+
+        self._last_action = last_action
+
+    @property
+    def last_action_as_of(self):
+        """Gets the last_action_as_of of this StatusInformation.  # noqa: E501
+
+
+        :return: The last_action_as_of of this StatusInformation.  # noqa: E501
+        :rtype: datetime
+        """
+        return self._last_action_as_of
+
+    @last_action_as_of.setter
+    def last_action_as_of(self, last_action_as_of):
+        """Sets the last_action_as_of of this StatusInformation.
+
+
+        :param last_action_as_of: The last_action_as_of of this StatusInformation.  # noqa: E501
+        :type: datetime
+        """
+
+        self._last_action_as_of = last_action_as_of
 
     def to_dict(self):
         """Returns the model properties as a dict"""

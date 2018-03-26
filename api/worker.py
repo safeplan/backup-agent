@@ -98,7 +98,13 @@ def do_work():
      
     device_api.device_update_status(
         environment.get_safeplan_id(),
-        DeviceStatus(ip_address = ip_address))
+        DeviceStatus(
+            ip_address = ip_address,
+            last_backup=last_backup_timestamp,
+            last_pruned=last_pruned,
+            last_action=action,
+            last_action_as_of=datetime.utcnow()
+        ))
 
 
     LOGGER.info("worker finished. Executed operation: {}".format(executed_operation))
