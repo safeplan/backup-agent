@@ -60,9 +60,9 @@ def do_work():
         else:
             if not last_backup_timestamp:
                 action = 'backup'
-            elif environment.get_current_mode() == 'backup' and (datetime.now() - last_backup_timestamp).seconds > MAX_AGE_SECONDS:
+            elif environment.get_current_mode() == 'backup' and (datetime.now() - last_backup_timestamp).total_seconds() > MAX_AGE_SECONDS:
                 action = 'backup'
-            elif environment.get_current_mode() == 'cleanup' and (last_pruned == None or (datetime.now() - last_pruned).seconds > MAX_AGE_SECONDS):
+            elif environment.get_current_mode() == 'cleanup' and (last_pruned == None or (datetime.now() - last_pruned).total_seconds() > MAX_AGE_SECONDS):
                 action = 'prune'
             else:
                 action = 'idle'
@@ -142,7 +142,7 @@ def fetch_offsite_status():
         except:
             pass
 
-        age = int((datetime.now() - last_backup_timestamp).seconds / 3600) if last_backup_timestamp else -1
+        age = int((datetime.now() - last_backup_timestamp).total_seconds() / 3600) if last_backup_timestamp else -1
 
         if age >= 0:
             description = "Last offsite backup occured at {}. As of {} it's {} hour(s) old. Last pruned: {}".format(strdatetime(last_backup_timestamp),strdatetime(datetime.now()), age, strdatetime(last_pruned))
