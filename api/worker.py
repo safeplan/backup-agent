@@ -17,6 +17,7 @@ offsite_archive_process = None
 offsite_archive_process_started = None
 last_backup_timestamp = None
 last_modified = None
+last_pruned = None
 MAX_AGE_SECONDS= 12 * 3600
 
 
@@ -28,6 +29,7 @@ def do_work():
     global offsite_archive_process_started
     global last_backup_timestamp
     global last_modified
+    global last_pruned
 
     device_details = device_api.device_get_details(environment.get_safeplan_id())
     executed_operation = 'noop'
@@ -49,7 +51,7 @@ def do_work():
         current_timestamp = datetime.now()
 
         if offsite_archive_process_just_finished or not last_backup_timestamp:
-            last_backup_timestamp, last_modified = fetch_offsite_status()
+            last_backup_timestamp, last_modified, last_pruned = fetch_offsite_status()
             executed_operation = 'fetched_status'
 
         if environment.get_forced_mode():
@@ -60,13 +62,13 @@ def do_work():
                 action = 'backup'
             elif environment.get_current_mode() == 'backup' and (datetime.now() - last_backup_timestamp).seconds > MAX_AGE_SECONDS:
                 action = 'backup'
-            elif environment.get_current_mode() == 'cleanup':
-                action = 'cleanup'
+            elif environment.get_current_mode() == 'cleanup' and (last_pruned == None or (datetime.now() - last_pruned).seconds > MAX_AGE_SECONDS):
+                action = 'prune'
             else:
                 action = 'idle'
 
 
-        LOGGER.info("worker is in {} mode. last backup completed: {}; last modified: {}".format(action,strdatetime(last_backup_timestamp),strdatetime(last_modified)))
+        LOGGER.info("worker is in {} mode. last backup completed: {}; last modified: {}; last pruned: {}".format(action,strdatetime(last_backup_timestamp),strdatetime(last_modified),strdatetime(last_pruned)))
 
         if action == 'backup':
             try:                
@@ -80,7 +82,7 @@ def do_work():
             except Exception as ex:
                 LOGGER.error('failed to start offsite backup process')
                 LOGGER.exception(ex)
-        elif action == 'cleanup':
+        elif action == 'prune':
             try:                
                 LOGGER.info("Starting to prune repository")
                 borg_commands.break_lock(borg_commands.REMOTE_REPO)
@@ -126,6 +128,13 @@ def fetch_offsite_status():
         with open("{}/offsite-list.json".format(environment.PATH_WORK), 'w') as outfile:
             json.dump(repo_list,outfile)
 
+        last_pruned = None
+        prune_logfile = "{}/backup_prune.log".format(environment.PATH_WORK)
+        if os.path.exists(prune_logfile):
+            with open(prune_logfile, 'r') as f:
+                if 'terminating with success' in f.read():
+                  last_pruned =  datetime.fromtimestamp(os.path.getmtime(prune_logfile))
+
         last_backup_timestamp = get_last_backed_up(repo_list)
         last_modified = None
         try:
@@ -136,7 +145,7 @@ def fetch_offsite_status():
         age = int((datetime.now() - last_backup_timestamp).seconds / 3600) if last_backup_timestamp else -1
 
         if age >= 0:
-            description = "Last offsite backup occured at {}. As of {} it's {} hour(s) old".format(strdatetime(last_backup_timestamp),strdatetime(datetime.now()), age)
+            description = "Last offsite backup occured at {}. As of {} it's {} hour(s) old. Last pruned: {}".format(strdatetime(last_backup_timestamp),strdatetime(datetime.now()), age, strdatetime(last_pruned))
         else:
             description = "A complete backup process has not yet completed"
     
@@ -151,7 +160,7 @@ def fetch_offsite_status():
                 LOGGER.error('Failed to report to control center')
                 LOGGER.exception(ex1)    
 
-        return  last_backup_timestamp, last_modified 
+        return  last_backup_timestamp, last_modified, last_pruned
     except Exception as ex:
         LOGGER.error('failed to retrieve status of offsite repository')
         LOGGER.exception(ex)
