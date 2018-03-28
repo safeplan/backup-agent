@@ -117,7 +117,7 @@ class DeviceApi(object):
         auth_settings = ['secret']  # noqa: E501
 
         return self.api_client.call_api(
-            '/{device_id}', 'GET',
+            '/device/{device_id}', 'GET',
             path_params,
             query_params,
             header_params,
@@ -224,7 +224,7 @@ class DeviceApi(object):
         auth_settings = ['secret']  # noqa: E501
 
         return self.api_client.call_api(
-            '/{device_id}', 'PUT',
+            '/device/{device_id}', 'PUT',
             path_params,
             query_params,
             header_params,
@@ -331,7 +331,7 @@ class DeviceApi(object):
         auth_settings = ['secret']  # noqa: E501
 
         return self.api_client.call_api(
-            '/{device_id}/status', 'POST',
+            '/device/{device_id}/status', 'POST',
             path_params,
             query_params,
             header_params,
