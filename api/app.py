@@ -14,7 +14,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import initializer
 from worker import do_work
 import environment
-from flask import abort,send_file,render_template,jsonify,request,send_from_directory
+from flask import abort,send_file,render_template,jsonify,request,send_from_directory,redirect
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -24,7 +24,7 @@ SCHEDULER = BackgroundScheduler()
 
 app = connexion.App(__name__, specification_dir='./swagger/')
 
-FILE_BASE_DIR='/Users/christoph' #/var/safeplan/history/archives
+FILE_BASE_DIR='/var/safeplan/history/archives'
 
 @app.route('/history', defaults={'req_path': ''})
 @app.route('/history/<path:req_path>')
@@ -50,6 +50,10 @@ def dir_listing(req_path):
 def send_browser(path):
     return send_from_directory('browse', path)
 
+@app.route('/browse')
+@app.route('/browse/')
+def start_browser():
+    return redirect("/browse/index.html", code=302)
 
 @app.route('/filemanager',  methods=['POST'])
 def list_files():
