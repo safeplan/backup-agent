@@ -10,7 +10,7 @@ LOGGER = logging.getLogger()
 
 PATH_BACKUP = "/var/safeplan/backup"
 PATH_CONFIG = "/var/safeplan/config"
-PATH_HISTORY = "/var/safeplan/history/archives"
+PATH_MOUNTPOINT = "/var/safeplan/history/archives"
 PATH_SSH = os.path.join(str(Path.home()), ".ssh")
 PATH_WORK = "/var/safeplan/work"
 

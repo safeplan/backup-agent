@@ -119,31 +119,37 @@ def prune(repo):
     
     return process
 
-#def mount():
-#    """
-#    Mounts the local archive
-#    """
-#
-#    cmd = "borg mount --strip-components 3 --foreground {} {}".format(LOCAL_REPO,environment.PATH_HISTORY)
-#
-#    process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#    return process
+def mount(repo):
+    """
+    Mounts the local archive
+    """
+    
+    cmd = "borg mount --strip-components 3 --foreground {repo} {mount_point} > {log_dir}/mount.log 2>&1 </dev/null".format(
+        repo=repo,
+        mount_point=environment.PATH_MOUNTPOINT,
+        log_dir=environment.PATH_WORK)
+
+    process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return process
 
   
-#def unmount():
-#    """
-#    (Evenutally) unmounts the local archive
-#    """
-#
-#    cmd = "borg umount {}".format(environment.PATH_HISTORY)
-#
-#    process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-#    process.wait(timeout=30)
-#    out, err = process.communicate()
-#    
-#    if out:
-#        LOGGER.info(out.decode("utf-8"))
-#    if err:
-#        LOGGER.info(err.decode("utf-8"))
+def unmount():
+    """
+    (Evenutally) unmounts the local archive
+    """
+
+    cmd = "borg umount {}".format(environment.PATH_MOUNTPOINT)
+
+    process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process.wait(timeout=30)
+    out, err = process.communicate()
+    
+    if out:
+        LOGGER.info(out.decode("utf-8"))
+    if err:
+        LOGGER.info(err.decode("utf-8"))
+
+
+
     
    

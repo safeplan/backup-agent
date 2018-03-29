@@ -13,6 +13,7 @@ import requests
 
 LOGGER = logging.getLogger()
 
+mount_process = None
 offsite_archive_process = None
 offsite_archive_process_started = None
 last_backup_timestamp = None
@@ -25,6 +26,7 @@ def do_work():
     """Background worker"""
     LOGGER.info("starting worker.")
 
+    global mount_process
     global offsite_archive_process
     global offsite_archive_process_started
     global last_backup_timestamp
@@ -46,7 +48,14 @@ def do_work():
         else:
             offsite_archive_process = None
             offsite_archive_process_just_finished = True
-    
+
+    if mount_process !=  None:
+        rc = mount_process.poll()
+        if rc is None:
+            LOGGER.info('offsite mount process is active')
+        else:
+            mount_process = None
+ 
     if not offsite_archive_process:
         current_timestamp = datetime.now()
 
@@ -69,6 +78,9 @@ def do_work():
 
 
         LOGGER.info("worker is in {} mode. last backup completed: {}; last modified: {}; last pruned: {}".format(action,strdatetime(last_backup_timestamp),strdatetime(last_modified),strdatetime(last_pruned)))
+
+        if action != 'idle':
+            unmount()
 
         if action == 'backup':
             try:                
@@ -93,6 +105,22 @@ def do_work():
             except Exception as ex:
                 LOGGER.error('failed to start offsite backup process')
                 LOGGER.exception(ex)
+        elif action == 'idle':
+            if not mount_process:
+                try:
+                    unmount()
+                    LOGGER.info("Now mounting offsite archive")
+                    if not os.path.exists(environment.PATH_MOUNTPOINT):
+                      os.makedirs(environment.PATH_MOUNTPOINT, 0o700)
+
+                    mount_process = borg_commands.mount(borg_commands.REMOTE_REPO)
+
+                    LOGGER.info("Offsite archive mounted by process {}".format(mount_process.pid))
+                    
+                    executed_operation = 'mount'
+                except Exception as ex:
+                    LOGGER.error('failed to mount offsite archive')
+                    LOGGER.exception(ex)
 
     ip_address = environment.get_ip_address()
      
@@ -179,3 +207,16 @@ def get_current_offsite_process():
 
 def strdatetime(dt):
     return dt.strftime("%Y-%m-%d %H:%M:%S") if dt else ""
+
+def unmount():
+    global mount_process
+
+    if mount_process != None:
+        LOGGER.info("Unmounting mount process {}".format(mount_process.pid))
+
+    borg_commands.unmount()
+    mount_process = None
+
+    if(os.path.exists(environment.PATH_MOUNTPOINT)):
+        os.rmdir(environment.PATH_MOUNTPOINT)
+

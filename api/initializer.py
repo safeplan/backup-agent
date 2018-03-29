@@ -86,11 +86,6 @@ def initialize():
     if not has_borg_passphrase():
         create_borg_passphrase()
 
-    if not os.path.exists(environment.PATH_HISTORY):
-        LOGGER.warning("Creating history path")
-        os.makedirs(environment.PATH_HISTORY, 0o777)
-
-
     LOGGER.info("submitting public key to safeplan server")
     safeplan_server.device_api.device_initialize(environment.get_safeplan_id(),
                              InitializationInformation(rsa_public_key=environment.get_rsa_public_key()))
