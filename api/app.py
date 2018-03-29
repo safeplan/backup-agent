@@ -14,7 +14,8 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import initializer
 from worker import do_work
 import environment
-from flask import abort,send_file,render_template,jsonify
+from flask import abort,send_file,render_template,jsonify,request
+import time
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger()
@@ -43,6 +44,46 @@ def dir_listing(req_path):
     files = os.listdir(abs_path)
     return jsonify(files)
 
+
+@app.route('/filemanager',  methods=['POST'])
+def file_manager():
+    BASE_DIR = '/var/safeplan/history/archives'
+
+    content = request.get_json(silent=True)
+    if 'action' in content and 'path' in content and content['action'] == 'list':
+
+        abs_path = os.path.join(BASE_DIR, content['path'].strip('/'))
+        results = []
+        if (os.path.exists(abs_path) and os.path.isdir(abs_path)):
+            for file in os.listdir(abs_path):
+              file_full_path = os.path.join(abs_path,file)
+              is_dir = os.path.isdir(file_full_path)
+              results.append({
+                "name": file, 
+                "rights" : ("d" if is_dir else "-") + "r--r--r--",
+                "size" : str(os.path.getsize(file_full_path)),
+                "date" : time.strftime("%Y-%m-%d %H:%M:%S",time.gmtime(os.path.getmtime(file_full_path))),
+                "type" : "dir" if is_dir else "file"
+                }
+              )
+
+        return jsonify({"result": results})
+    
+    elif 'action' in content and 'item' in content and content['action'] == 'getContent':
+        abs_path = os.path.join(BASE_DIR, content['item'].strip('/'))
+  
+        if not os.path.exists(abs_path):
+            return abort(404)
+
+        # Check if path is a file and serve
+        if not os.path.isfile(abs_path):
+            return abort(400)
+        
+        return send_file(abs_path)
+
+    else:
+        return jsonify({"result": {"success": False, "error" : "unhandled action"}})
+
 def shutdown_handler(signum, frame):
     """stops the scheduler when shutting down"""
     LOGGER.info("Received signal %d (%s), shutting down scheduler", signum, str(frame))
@@ -53,8 +94,10 @@ def start_swagger():
     """Starting the swagger-served api"""
     app.add_api('swagger.yaml', arguments={'host':'{}:8080'.format(environment.get_ip_address())} )
     CORS(app.app)
-    app.run(port=8080, debug=True if os.environ.get('DEBUG',0) == "1" else False)
-
+  
+    app.run(port=8080, server='tornado', debug=True if os.environ.get('DEBUG',0) == "1" else False)
+    #app.run(port=8080, debug=True)
+        
 if __name__ == '__main__':
     if not environment.get_safeplan_id():
         sys.exit('SAFEPLAN_ID environment variable not set, exiting.')
