@@ -14,7 +14,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import initializer
 from worker import do_work
 import environment
-from flask import abort,send_file,render_template,jsonify,request
+from flask import abort,send_file,render_template,jsonify,request,send_from_directory
 import time
 
 logging.basicConfig(level=logging.INFO)
@@ -24,13 +24,14 @@ SCHEDULER = BackgroundScheduler()
 
 app = connexion.App(__name__, specification_dir='./swagger/')
 
+FILE_BASE_DIR='/Users/christoph' #/var/safeplan/history/archives
+
 @app.route('/history', defaults={'req_path': ''})
 @app.route('/history/<path:req_path>')
 def dir_listing(req_path):
-    BASE_DIR = '/var/safeplan/history/archives'
 
     # Joining the base and the requested path
-    abs_path = os.path.join(BASE_DIR, req_path)
+    abs_path = os.path.join(FILE_BASE_DIR, req_path)
 
     # Return 404 if path doesn't exist
     if not os.path.exists(abs_path):
@@ -45,14 +46,16 @@ def dir_listing(req_path):
     return jsonify(files)
 
 
-@app.route('/filemanager',  methods=['POST'])
-def file_manager():
-    BASE_DIR = '/var/safeplan/history/archives'
+@app.route('/browse/<path:path>')
+def send_browser(path):
+    return send_from_directory('browse', path)
 
+
+@app.route('/filemanager',  methods=['POST'])
+def list_files():
     content = request.get_json(silent=True)
     if 'action' in content and 'path' in content and content['action'] == 'list':
-
-        abs_path = os.path.join(BASE_DIR, content['path'].strip('/'))
+        abs_path = os.path.join(FILE_BASE_DIR, content['path'].strip('/'))
         results = []
         if (os.path.exists(abs_path) and os.path.isdir(abs_path)):
             for file in os.listdir(abs_path):
@@ -68,9 +71,13 @@ def file_manager():
               )
 
         return jsonify({"result": results})
-    
-    elif 'action' in content and 'item' in content and content['action'] == 'getContent':
-        abs_path = os.path.join(BASE_DIR, content['item'].strip('/'))
+    else:
+        return jsonify({"result": {"success": False, "error" : "unhandled action"}})
+
+@app.route('/filemanager',  methods=['GET'])
+def download_file():
+    if request.args.get('action', '') == 'download':
+        abs_path = os.path.join(FILE_BASE_DIR, request.args.get('path', '').strip('/'))
   
         if not os.path.exists(abs_path):
             return abort(404)
@@ -83,6 +90,7 @@ def file_manager():
 
     else:
         return jsonify({"result": {"success": False, "error" : "unhandled action"}})
+
 
 def shutdown_handler(signum, frame):
     """stops the scheduler when shutting down"""

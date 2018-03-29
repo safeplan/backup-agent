@@ -25,7 +25,6 @@ COPY requirements.txt /usr/src/app/
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY api /usr/src/app
-#   COPY backup-agent-web/dist /usr/src/app/web
 
 EXPOSE 8080
 ENV TZ=Europe/Vienna
