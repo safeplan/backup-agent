@@ -52,7 +52,7 @@ def do_work():
     if mount_process !=  None:
         rc = mount_process.poll()
         if rc is None:
-            LOGGER.info('offsite mount process is active')
+            LOGGER.info('offsite mount process {} is active'.format(mount_process.pid))
         else:
             mount_process = None
  
