@@ -14,11 +14,34 @@ from apscheduler.schedulers.background import BackgroundScheduler
 import initializer
 from worker import do_work
 import environment
+from flask import abort,send_file,render_template,jsonify
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger()
 
 SCHEDULER = BackgroundScheduler()
+
+app = connexion.App(__name__, specification_dir='./swagger/')
+
+@app.route('/history', defaults={'req_path': ''})
+@app.route('/history/<path:req_path>')
+def dir_listing(req_path):
+    BASE_DIR = '/var/safeplan/history/archives'
+
+    # Joining the base and the requested path
+    abs_path = os.path.join(BASE_DIR, req_path)
+
+    # Return 404 if path doesn't exist
+    if not os.path.exists(abs_path):
+        return abort(404)
+
+    # Check if path is a file and serve
+    if os.path.isfile(abs_path):
+        return send_file(abs_path)
+
+    # Show directory contents
+    files = os.listdir(abs_path)
+    return jsonify(files)
 
 def shutdown_handler(signum, frame):
     """stops the scheduler when shutting down"""
@@ -28,7 +51,6 @@ def shutdown_handler(signum, frame):
 
 def start_swagger():
     """Starting the swagger-served api"""
-    app = connexion.App(__name__, specification_dir='./swagger/')
     app.add_api('swagger.yaml', arguments={'host':'{}:8080'.format(environment.get_ip_address())} )
     CORS(app.app)
     app.run(port=8080, debug=True if os.environ.get('DEBUG',0) == "1" else False)
@@ -36,7 +58,7 @@ def start_swagger():
 if __name__ == '__main__':
     if not environment.get_safeplan_id():
         sys.exit('SAFEPLAN_ID environment variable not set, exiting.')
-
+    
     all_paths_ok, problematic_path = environment.check_paths()
     if not all_paths_ok:
         sys.exit("Unable to access path {0}".format(problematic_path))
