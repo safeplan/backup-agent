@@ -20,6 +20,7 @@ build/
 develop-eggs/
 dist/
 downloads/
+fm/node_modules/
 eggs/
 .eggs/
 lib/
