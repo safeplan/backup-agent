@@ -175,7 +175,7 @@ def fetch_offsite_status():
         age = int((datetime.now() - last_backup_timestamp).total_seconds() / 3600) if last_backup_timestamp else -1
 
         if age >= 0:
-            description = "Last offsite backup occured at {}. As of {} it's {} hour(s) old. Last pruned: {}".format(strdatetime(last_backup_timestamp),strdatetime(datetime.now()), age, strdatetime(last_pruned))
+            description = "Last offsite backup occurred at {}. As of {} it's {} hour(s) old. Last pruned: {}".format(strdatetime(last_backup_timestamp),strdatetime(datetime.now()), age, strdatetime(last_pruned))
         else:
             description = "A complete backup process has not yet completed"
     
