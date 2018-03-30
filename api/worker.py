@@ -36,6 +36,8 @@ def do_work():
     global last_modified
     global last_pruned
 
+    touch_backup()
+
     is_allowed_to_remount = False
     device_details = device_api.device_get_details(environment.get_safeplan_id())
     executed_operation = 'noop'
@@ -236,4 +238,13 @@ def mount(forced=False):
         
     except Exception as ex:
         LOGGER.error('failed to mount offsite archive')
+        LOGGER.exception(ex)
+
+def touch_backup():
+    try:
+        touch_file = os.path.join(environment.PATH_BACKUP, ".safeplan-modified")
+        with open(touch_file, mode='w') as file:
+            file.write(strdatetime(datetime.now()))
+    except Exception as ex:
+        LOGGER.error('failed to write to {}'.format(touch_file))
         LOGGER.exception(ex)
