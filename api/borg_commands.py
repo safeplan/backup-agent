@@ -124,7 +124,7 @@ def mount(repo):
     Mounts the local archive
     """
     
-    cmd = "borg mount --strip-components 3 --foreground {repo} {mount_point} > {log_dir}/mount.log 2>&1 </dev/null".format(
+    cmd = "borg mount --strip-components 3 --foreground {repo} {mount_point} >> {log_dir}/mount.log 2>&1 </dev/null".format(
         repo=repo,
         mount_point=environment.PATH_MOUNTPOINT,
         log_dir=environment.PATH_WORK)

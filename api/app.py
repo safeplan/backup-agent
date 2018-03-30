@@ -12,10 +12,10 @@ import connexion
 from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 import initializer
-from worker import do_work
 import environment
 from flask import abort,send_file,render_template,jsonify,request,send_from_directory,redirect
 import time
+import worker
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger()
@@ -24,11 +24,13 @@ SCHEDULER = BackgroundScheduler()
 
 app = connexion.App(__name__, specification_dir='./swagger/')
 
-FILE_BASE_DIR='/var/safeplan/history/archives'
+FILE_BASE_DIR=os.environ.get("SAFEPLAN_BROWSE_BASE_DIR",'/var/safeplan/history/archives')
 
 @app.route('/history', defaults={'req_path': ''})
 @app.route('/history/<path:req_path>')
 def dir_listing(req_path):
+
+    worker.mount()
 
     # Joining the base and the requested path
     abs_path = os.path.join(FILE_BASE_DIR, req_path)
@@ -48,15 +50,18 @@ def dir_listing(req_path):
 
 @app.route('/browse/<path:path>')
 def send_browser(path):
+    worker.mount()
     return send_from_directory('browse', path)
 
 @app.route('/browse')
 @app.route('/browse/')
 def start_browser():
+    worker.mount()
     return redirect("/browse/index.html", code=302)
 
 @app.route('/filemanager',  methods=['POST'])
 def list_files():
+    worker.mount()
     content = request.get_json(silent=True)
     if 'action' in content and 'path' in content and content['action'] == 'list':
         abs_path = os.path.join(FILE_BASE_DIR, content['path'].strip('/'))
@@ -80,16 +85,9 @@ def list_files():
 
 @app.route('/filemanager',  methods=['GET'])
 def download_file():
+    worker.mount()
     if request.args.get('action', '') == 'download':
-        abs_path = os.path.join(FILE_BASE_DIR, request.args.get('path', '').strip('/'))
-  
-        if not os.path.exists(abs_path):
-            return abort(404)
-
-        # Check if path is a file and serve
-        if not os.path.isfile(abs_path):
-            return abort(400)
-        
+        abs_path = os.path.join(FILE_BASE_DIR, request.args.get('path', '').strip('/'))        
         return send_file(abs_path)
 
     else:
@@ -98,9 +96,9 @@ def download_file():
 
 def shutdown_handler(signum, frame):
     """stops the scheduler when shutting down"""
-    LOGGER.info("Received signal %d (%s), shutting down scheduler", signum, str(frame))
-    SCHEDULER.shutdown(wait=False)
-    sys.exit(1)
+    LOGGER.info("Received signal %d, shutting down scheduler", signum)
+    SCHEDULER.shutdown()
+    LOGGER.info("Shutdown completed")
 
 def start_swagger():
     """Starting the swagger-served api"""
@@ -131,10 +129,10 @@ if __name__ == '__main__':
  
     if initializer.initialize():
         SCHEDULER.start()
-        SCHEDULER.add_job(do_work, 'interval', seconds=environment.EXECUTE_WORKER_EVERY_SECONDS, id='worker')
+        SCHEDULER.add_job(worker.do_work, 'interval', seconds=environment.EXECUTE_WORKER_EVERY_SECONDS, id='worker')
         signal.signal(signal.SIGTERM, shutdown_handler)
 
-        do_work()
+        worker.do_work()
 
         start_swagger()
     else:

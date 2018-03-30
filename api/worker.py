@@ -21,11 +21,14 @@ last_modified = None
 last_pruned = None
 MAX_AGE_SECONDS= 12 * 3600
 
+is_allowed_to_remount = False
+
 
 def do_work():
     """Background worker"""
     LOGGER.info("starting worker.")
 
+    global is_allowed_to_remount 
     global mount_process
     global offsite_archive_process
     global offsite_archive_process_started
@@ -33,6 +36,7 @@ def do_work():
     global last_modified
     global last_pruned
 
+    is_allowed_to_remount = False
     device_details = device_api.device_get_details(environment.get_safeplan_id())
     executed_operation = 'noop'
     if not device_details.status in ['in_operation', 'initialized']:
@@ -107,20 +111,10 @@ def do_work():
                 LOGGER.exception(ex)
         elif action == 'idle':
             if not mount_process:
-                try:
-                    unmount()
-                    LOGGER.info("Now mounting offsite archive")
-                    if not os.path.exists(environment.PATH_MOUNTPOINT):
-                      os.makedirs(environment.PATH_MOUNTPOINT, 0o700)
+                mount(True)
+                executed_operation = 'mount'
+            is_allowed_to_remount = True
 
-                    mount_process = borg_commands.mount(borg_commands.REMOTE_REPO)
-
-                    LOGGER.info("Offsite archive mounted by process {}".format(mount_process.pid))
-                    
-                    executed_operation = 'mount'
-                except Exception as ex:
-                    LOGGER.error('failed to mount offsite archive')
-                    LOGGER.exception(ex)
 
     ip_address = environment.get_ip_address()
      
@@ -210,7 +204,6 @@ def strdatetime(dt):
 
 def unmount():
     global mount_process
-
     if mount_process != None:
         LOGGER.info("Unmounting mount process {}".format(mount_process.pid))
 
@@ -220,3 +213,27 @@ def unmount():
     if(os.path.exists(environment.PATH_MOUNTPOINT)):
         os.rmdir(environment.PATH_MOUNTPOINT)
 
+
+def mount(forced):
+    global mount_process
+
+    if not forced and not is_allowed_to_remount:
+        LOGGER.info("Currently not allowed to mount...")
+        return
+
+    #If there is a running mount_process, exit
+    if mount_process and mount_process.poll() == None:
+        LOGGER.info("Offsite archive already mounted by process {}".format(mount_process.pid))
+        return
+
+    try:
+        unmount()
+        LOGGER.info("Now mounting offsite archive")
+        if not os.path.exists(environment.PATH_MOUNTPOINT):
+            os.makedirs(environment.PATH_MOUNTPOINT, 0o700)
+        mount_process = borg_commands.mount(borg_commands.REMOTE_REPO)
+        LOGGER.info("Offsite archive mounted by process {}".format(mount_process.pid))
+        
+    except Exception as ex:
+        LOGGER.error('failed to mount offsite archive')
+        LOGGER.exception(ex)
