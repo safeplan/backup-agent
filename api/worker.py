@@ -214,7 +214,7 @@ def unmount():
         os.rmdir(environment.PATH_MOUNTPOINT)
 
 
-def mount(forced):
+def mount(forced=False):
     global mount_process
 
     if not forced and not is_allowed_to_remount:
