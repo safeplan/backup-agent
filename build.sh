@@ -23,6 +23,7 @@ mkdir -p api/browse/node_modules/angular-translate/dist && cp fm/node_modules/an
 mkdir -p api/browse/node_modules/ng-file-upload/dist && cp fm/node_modules/ng-file-upload/dist/ng-file-upload.min.js api/browse/node_modules/ng-file-upload/dist/ng-file-upload.min.js
 mkdir -p api/browse/node_modules/bootstrap/dist/js && cp fm/node_modules/bootstrap/dist/js/bootstrap.min.js api/browse/node_modules/bootstrap/dist/js/bootstrap.min.js
 mkdir -p api/browse/node_modules/bootswatch/paper && cp fm/node_modules/bootswatch/paper/bootstrap.min.css api/browse/node_modules/bootswatch/paper/bootstrap.min.css
+mkdir -p api/browse/node_modules/bootswatch/fonts && cp fm/node_modules/bootswatch/fonts/* api/browse/node_modules/bootswatch/fonts
 
 docker build -t safeplan/backup-agent:1 .
 docker push safeplan/backup-agent:1
