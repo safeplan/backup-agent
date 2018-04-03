@@ -116,7 +116,8 @@ def do_work():
                 mount(True)
                 executed_operation = 'mount'
             is_allowed_to_remount = True
-
+    else:
+        action = "backup"
 
     ip_address = environment.get_ip_address()
      
