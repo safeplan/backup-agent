@@ -117,7 +117,7 @@ def do_work():
                 executed_operation = 'mount'
             is_allowed_to_remount = True
     else:
-        action = "backup"
+        action = "backup_ongoing"
 
     ip_address = environment.get_ip_address()
      
@@ -127,7 +127,7 @@ def do_work():
             ip_address = ip_address,
             last_backup=last_backup_timestamp,
             last_pruned=last_pruned,
-            last_action=action,
+            last_action=executed_operation,
             last_action_as_of=datetime.utcnow()
         ))
 
