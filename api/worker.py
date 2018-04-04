@@ -178,7 +178,7 @@ def fetch_offsite_status():
         if age >= 0:
             description = "Last offsite backup occurred at {}. As of {} it's {} hour(s) old. Last pruned: {}".format(strdatetime(last_backup_timestamp),strdatetime(datetime.now()), age, strdatetime(last_pruned))
         else:
-            description = "A complete backup process has not yet completed"
+            description = "No backup yet (or a long-running backup is currently ongoing)"
     
         LOGGER.info("Repository status has been updated. %s",description)
 
