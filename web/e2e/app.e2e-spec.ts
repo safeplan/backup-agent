@@ -1,6 +1,6 @@
 import { AppPage } from './app.po';
 
-describe('backup-agent-web App', () => {
+describe('web App', () => {
   let page: AppPage;
 
   beforeEach(() => {
