@@ -1,0 +1,5 @@
+[
+  "api/test_worker.py::TestWorker::test2",
+  "api/test_worker.py::TestWorker::test3",
+  "api/test_worker.py::TestWorker::test_do_nothing_if_device_is_not_initialized"
+]
