@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en" data-ng-app="FileManagerApp">
+
 <head>
   <!--
     * Angular FileManager v1.5.1 (https://github.com/joni2back/angular-filemanager)
@@ -8,15 +9,15 @@
   -->
   <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
   <meta charset="utf-8">
-  <title>angular-filemanager</title>
+  <title>Safeplan file manager</title>
 
   <!-- third party -->
-    <script src="node_modules/jquery/dist/jquery.min.js"></script>
-    <script src="node_modules/angular/angular.min.js"></script>
-    <script src="node_modules/angular-translate/dist/angular-translate.min.js"></script>
-    <script src="node_modules/ng-file-upload/dist/ng-file-upload.min.js"></script>
-    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
-    <link rel="stylesheet" href="node_modules/bootswatch/paper/bootstrap.min.css" />
+  <script src="node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="node_modules/angular/angular.min.js"></script>
+  <script src="node_modules/angular-translate/dist/angular-translate.min.js"></script>
+  <script src="node_modules/ng-file-upload/dist/ng-file-upload.min.js"></script>
+  <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="node_modules/bootswatch/paper/bootstrap.min.css" />
   <!-- /third party -->
 
   <!-- Uncomment if you need to use raw source code
@@ -38,8 +39,8 @@
   -->
 
   <!-- Comment if you need to use raw source code -->
-    <link href="dist/angular-filemanager.min.css" rel="stylesheet">
-    <script src="dist/angular-filemanager.min.js"></script>
+  <link href="dist/angular-filemanager.min.css" rel="stylesheet">
+  <script src="dist/angular-filemanager.min.js"></script>
   <!-- /Comment if you need to use raw source code -->
 
   <script type="text/javascript">
@@ -47,64 +48,64 @@
     angular.module('FileManagerApp').config(['fileManagerConfigProvider', function (config) {
       var defaults = config.$get();
       config.set({
-          appName: 'Safeplan Filemanager',
-          defaultLang: 'de',
-          multiLang: true,
+        appName: 'Safeplan Filemanager',
+        defaultLang: 'de',
+        multiLang: true,
 
-          listUrl: '/filemanager',
-          uploadUrl: '/filemanager',
-          renameUrl: '/filemanager',
-          copyUrl: '/filemanager',
-          moveUrl: '/filemanager',
-          removeUrl: '/filemanager',
-          editUrl: '/filemanager',
-          getContentUrl: '/filemanager',
-          createFolderUrl: '/filemanager',
-          downloadFileUrl: '/filemanager',
-          downloadMultipleUrl: '/filemanager',
-          compressUrl: '/filemanager',
-          extractUrl: '/filemanager',
-          permissionsUrl: '/filemanager',
-          basePath: '/',
+        listUrl: '/filemanager',
+        uploadUrl: '/filemanager',
+        renameUrl: '/filemanager',
+        copyUrl: '/filemanager',
+        moveUrl: '/filemanager',
+        removeUrl: '/filemanager',
+        editUrl: '/filemanager',
+        getContentUrl: '/filemanager',
+        createFolderUrl: '/filemanager',
+        downloadFileUrl: '/filemanager',
+        downloadMultipleUrl: '/filemanager',
+        compressUrl: '/filemanager',
+        extractUrl: '/filemanager',
+        permissionsUrl: '/filemanager',
+        basePath: '/',
 
-          searchForm: false,
-          sidebar: true,
-          breadcrumb: true,
-          allowedActions: {
-              upload: false,
-              rename: false,
-              move: false,
-              copy: false,
-              edit: false,
-              changePermissions: false,
-              compress: false,
-              compressChooseName: false,
-              extract: true,
-              download: true,
-              downloadMultiple: true,
-              preview: true,
-              remove: false,
-              createFolder: false,
-              pickFiles: false,
-              pickFolders: false
-          },
+        searchForm: false,
+        sidebar: true,
+        breadcrumb: true,
+        allowedActions: {
+          upload: false,
+          rename: false,
+          move: false,
+          copy: false,
+          edit: false,
+          changePermissions: false,
+          compress: false,
+          compressChooseName: false,
+          extract: true,
+          download: true,
+          downloadMultiple: true,
+          preview: true,
+          remove: false,
+          createFolder: false,
+          pickFiles: false,
+          pickFolders: false
+        },
 
-          multipleDownloadFileName: 'safeplan-filemanager.zip',
-          filterFileExtensions: [],
-          showExtensionIcons: true,
-          showSizeForDirectories: false,
-          useBinarySizePrefixes: false,
-          downloadFilesByAjax: true,
-          previewImagesInModal: true,
-          enablePermissionsRecursive: true,
-          compressAsync: false,
-          extractAsync: false,
-          pickCallback: null,
+        multipleDownloadFileName: 'safeplan-filemanager.zip',
+        filterFileExtensions: [],
+        showExtensionIcons: true,
+        showSizeForDirectories: false,
+        useBinarySizePrefixes: false,
+        downloadFilesByAjax: true,
+        previewImagesInModal: true,
+        enablePermissionsRecursive: true,
+        compressAsync: false,
+        extractAsync: false,
+        pickCallback: null,
 
-          isEditableFilePattern: /\.(txt|diff?|patch|svg|asc|cnf|cfg|conf|html?|.html|cfm|cgi|aspx?|ini|pl|py|md|css|cs|js|jsp|log|htaccess|htpasswd|gitignore|gitattributes|env|json|atom|eml|rss|markdown|sql|xml|xslt?|sh|rb|as|bat|cmd|cob|for|ftn|frm|frx|inc|lisp|scm|coffee|php[3-6]?|java|c|cbl|go|h|scala|vb|tmpl|lock|go|yml|yaml|tsv|lst)$/i,
-          isImageFilePattern: /\.(jpe?g|gif|bmp|png|svg|tiff?)$/i,
-          isExtractableFilePattern: /\.(gz|tar|rar|g?zip)$/i,
-          tplPath: 'src/templates'
+        isEditableFilePattern: /\.(txt|diff?|patch|svg|asc|cnf|cfg|conf|html?|.html|cfm|cgi|aspx?|ini|pl|py|md|css|cs|js|jsp|log|htaccess|htpasswd|gitignore|gitattributes|env|json|atom|eml|rss|markdown|sql|xml|xslt?|sh|rb|as|bat|cmd|cob|for|ftn|frm|frx|inc|lisp|scm|coffee|php[3-6]?|java|c|cbl|go|h|scala|vb|tmpl|lock|go|yml|yaml|tsv|lst)$/i,
+        isImageFilePattern: /\.(jpe?g|gif|bmp|png|svg|tiff?)$/i,
+        isExtractableFilePattern: /\.(gz|tar|rar|g?zip)$/i,
+        tplPath: 'src/templates'
       });
     }]);
   </script>
@@ -113,5 +114,5 @@
 <body class="ng-cloak">
   <angular-filemanager></angular-filemanager>
 </body>
-</html>
 
+</html>
