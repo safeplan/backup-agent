@@ -16,6 +16,7 @@ import environment
 from flask import abort,send_file,render_template,jsonify,request,send_from_directory,redirect
 import time
 import worker
+import requests
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger()
@@ -107,6 +108,16 @@ def start_swagger():
   
     app.run(port=8080, server='tornado', debug=True if os.environ.get('DEBUG',0) == "1" else False)
     #app.run(port=8080, debug=True)
+
+def report_to_control_center(status, message):
+    if environment.get_cc_api_key():
+        url = "https://control-center.armstrongconsulting.com/api/agent/SAFEPLAN_{}/{}?parentApiKey={}".format(
+            environment.get_safeplan_id(), status, environment.get_cc_api_key())
+        try:
+            requests.post(url=url, data=message)
+        except Exception as ex1:
+            LOGGER.error('Failed to report to control center')
+            LOGGER.exception(ex1)
         
 if __name__ == '__main__':
     if not environment.get_safeplan_id():
@@ -128,6 +139,7 @@ if __name__ == '__main__':
     LOGGER.info("starting safeplan backup agent for device %s",os.environ['SAFEPLAN_ID']) 
  
     if initializer.initialize():
+        report_to_control_center("ok", "device successfully initialized")
         SCHEDULER.start()
         SCHEDULER.add_job(worker.do_work, 'interval', seconds=environment.EXECUTE_WORKER_EVERY_SECONDS, id='worker')
         signal.signal(signal.SIGTERM, shutdown_handler)
@@ -136,4 +148,5 @@ if __name__ == '__main__':
 
         start_swagger()
     else:
+        report_to_control_center("fail", "device initialization failed")
         sys.exit('Initializing failed, exiting.')

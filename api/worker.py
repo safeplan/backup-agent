@@ -10,8 +10,7 @@ import borg_commands
 import json
 import dateutil
 import requests
-
-# test
+import subprocess
 
 LOGGER = logging.getLogger()
 
@@ -181,6 +180,10 @@ def fetch_offsite_status():
                 strdatetime(last_backup_timestamp), strdatetime(datetime.now()), age, strdatetime(last_pruned))
         else:
             description = "No backup yet (or a long-running backup is currently ongoing)"
+
+            # append df -h output of the backup directory to the description
+        df = subprocess.Popen(["df", "-h", environment.PATH_BACKUP], stdout=subprocess.PIPE)
+        description += "\n" + df.communicate()[0].decode('UTF-8')
 
         LOGGER.info("Repository status has been updated. %s", description)
 
