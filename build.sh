@@ -24,7 +24,3 @@ mkdir -p api/browse/node_modules/ng-file-upload/dist && cp fm/node_modules/ng-fi
 mkdir -p api/browse/node_modules/bootstrap/dist/js && cp fm/node_modules/bootstrap/dist/js/bootstrap.min.js api/browse/node_modules/bootstrap/dist/js/bootstrap.min.js
 mkdir -p api/browse/node_modules/bootswatch/paper && cp fm/node_modules/bootswatch/paper/bootstrap.min.css api/browse/node_modules/bootswatch/paper/bootstrap.min.css
 mkdir -p api/browse/node_modules/bootswatch/fonts && cp fm/node_modules/bootswatch/fonts/* api/browse/node_modules/bootswatch/fonts
-
-echo "**************************************************************************"
-echo "Don't forget to call ./release-to-staging.sh or ./release-to-production.sh"
-echo "**************************************************************************"

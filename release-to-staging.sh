@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+./build.sh
+
 docker build -t safeplan/backup-agent:STAGING .
 docker push safeplan/backup-agent:STAGING
 
