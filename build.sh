@@ -25,13 +25,6 @@ mkdir -p api/browse/node_modules/bootstrap/dist/js && cp fm/node_modules/bootstr
 mkdir -p api/browse/node_modules/bootswatch/paper && cp fm/node_modules/bootswatch/paper/bootstrap.min.css api/browse/node_modules/bootswatch/paper/bootstrap.min.css
 mkdir -p api/browse/node_modules/bootswatch/fonts && cp fm/node_modules/bootswatch/fonts/* api/browse/node_modules/bootswatch/fonts
 
-docker build -t safeplan/backup-agent:STAGING .
-docker push safeplan/backup-agent:STAGING
-
-echo "**************************************************"
-echo "TYou just built the STAGING tagged version of the agent"
-echo "The STAGING version is only used by test devices"
-echo "To release to production devices, call ./release.sh"
-echo "**************************************************"
-
-
+echo "**************************************************************************"
+echo "Don't forget to call ./release-to-staging.sh or ./release-to-production.sh"
+echo "**************************************************************************"
