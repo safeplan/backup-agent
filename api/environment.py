@@ -25,8 +25,6 @@ FORCED_MODE = None
 
 EXECUTE_WORKER_EVERY_SECONDS = 60
 
-
-
 def check_paths():
     if not os.access(PATH_BACKUP, os.W_OK):
         return False, PATH_BACKUP
