@@ -6,6 +6,7 @@ set -e
 docker build -t safeplan/backup-agent:STAGING .
 docker push safeplan/backup-agent:STAGING
 
+
 echo "*****************************************************************"
 echo "You released the :STAGING tagged version of the agent"
 echo "which is only used by specific test devices"
