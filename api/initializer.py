@@ -11,8 +11,10 @@ import getpass
 import subprocess
 import worker
 import safeplan_server
+import cc
 
 LOGGER = logging.getLogger()
+
 
 def has_rsa_keys():
     """
@@ -20,11 +22,13 @@ def has_rsa_keys():
     """
     return os.path.exists(environment.FILENAME_PRIVATE_KEY)
 
+
 def has_borg_passphrase():
     """
     Checks if the passphrase has been created
     """
     return os.path.exists(environment.FILENAME_BORG_PASSPHRASE)
+
 
 def create_borg_passphrase():
     """
@@ -35,7 +39,7 @@ def create_borg_passphrase():
         os.makedirs(environment.PATH_CONFIG, 0o700)
 
     if not has_borg_passphrase():
-        LOGGER.warning("Creating new borg passphrase")  
+        LOGGER.warning("Creating new borg passphrase")
         chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890"
         passphrase = ''.join(choice(chars) for _ in range(1024))
 
@@ -43,6 +47,7 @@ def create_borg_passphrase():
             file.write(passphrase)
 
         os.chmod(environment.FILENAME_BORG_PASSPHRASE, 0o444)
+
 
 def create_rsa_keys():
     """Initializes the backup-agent"""
@@ -52,28 +57,28 @@ def create_rsa_keys():
         os.makedirs(environment.PATH_CONFIG, 0o700)
 
     if not has_rsa_keys():
-        
+
         LOGGER.warning("creating new rsa keys")
         process = subprocess.Popen("ssh-keygen -f /root/.ssh/id_rsa -t rsa -N ''", shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait(timeout=30)
-    
+
         out, err = process.communicate()
-    
+
         if out:
             LOGGER.error(out.decode("utf-8"))
 
         if err:
             LOGGER.info(err.decode("utf-8"))
-    
+
         if not process.returncode in [0]:
             raise ValueError("Unexpected return code from ssh-keygen")
 
         with open("/root/.ssh/config", mode='w') as file:
             file.writelines("Host *\n    StrictHostKeyChecking no")
 
-
     else:
         LOGGER.info("RSA keys have already been created, reusing existing RSA keys")
+
 
 def initialize():
     """
@@ -88,9 +93,9 @@ def initialize():
 
     LOGGER.info("submitting public key to safeplan server")
     safeplan_server.device_api.device_initialize(environment.get_safeplan_id(),
-                             InitializationInformation(rsa_public_key=environment.get_rsa_public_key()))
+                                                 InitializationInformation(rsa_public_key=environment.get_rsa_public_key()))
 
-    os.environ['BORG_CACHE_DIR'] = environment.PATH_WORK    
+    os.environ['BORG_CACHE_DIR'] = environment.PATH_WORK
     os.environ['BORG_BASE_DIR'] = environment.PATH_CONFIG
     os.environ['BORG_PASSPHRASE'] = environment.get_borg_passphrase()
     os.environ['BORG_RELOCATED_REPO_ACCESS_IS_OK'] = 'YES'
@@ -103,7 +108,8 @@ def initialize():
     borg_commands.init(borg_commands.REMOTE_REPO)
 
     worker.fetch_offsite_status()
-  
+
     LOGGER.info("initialized ok.")
+    cc.report_to_control_center("incident", "backup-agent starting up - device initialized")
     return True
     

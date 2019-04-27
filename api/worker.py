@@ -1,5 +1,3 @@
-"""Initializing operations"""
-
 import logging
 import environment
 from safeplan_server import device_api
@@ -11,6 +9,7 @@ import json
 import dateutil
 import requests
 import subprocess
+import cc
 
 LOGGER = logging.getLogger()
 
@@ -91,7 +90,7 @@ def do_work():
 
         if action == 'backup':
             try:
-                LOGGER.info("Starting offsite backup")
+                LOGGER.info("Starting backup")
                 borg_commands.break_lock(borg_commands.REMOTE_REPO)
                 offsite_archive_process = borg_commands.create_archive(borg_commands.REMOTE_REPO, "offsite_" + current_timestamp.strftime("%Y-%m-%dT%H:%M:%S"))
                 offsite_archive_process_started = datetime.now()
@@ -99,8 +98,10 @@ def do_work():
                 executed_operation = 'started_backup'
 
             except Exception as ex:
-                LOGGER.error('failed to start offsite backup process')
+                LOGGER.error('failed to start backup process')
                 LOGGER.exception(ex)
+                cc.report_to_control_center("fail", "failed to start backup process: " + str(ex))
+
         elif action == 'prune':
             try:
                 LOGGER.info("Starting to prune repository")
@@ -110,7 +111,7 @@ def do_work():
                 LOGGER.info("Prune process has pid {}".format(offsite_archive_process.pid))
                 executed_operation = 'started_prune'
             except Exception as ex:
-                LOGGER.error('failed to start offsite backup process')
+                LOGGER.error('failed to start prune process')
                 LOGGER.exception(ex)
         elif action == 'idle':
             if not mount_process:
@@ -176,7 +177,7 @@ def fetch_offsite_status():
         age = int((datetime.now() - last_backup_timestamp).total_seconds() / 3600) if last_backup_timestamp else -1
 
         if age >= 0:
-            description = "Last offsite backup occurred at {}. As of {} it's {} hour(s) old. Last pruned: {}".format(
+            description = "Last backup occurred at {}. As of {} it's {} hour(s) old. Last pruned: {}".format(
                 strdatetime(last_backup_timestamp), strdatetime(datetime.now()), age, strdatetime(last_pruned))
         else:
             description = "No backup yet (or a long-running backup is currently ongoing)"
@@ -187,19 +188,13 @@ def fetch_offsite_status():
 
         LOGGER.info("Repository status has been updated. %s", description)
 
-        if environment.get_cc_api_key():
-            method = "ok" if age >= 0 and age < 24 else "fail"
-            url = "https://control-center.armstrongconsulting.com/api/agent/SAFEPLAN_{}/{}?parentApiKey={}".format(environment.get_safeplan_id(), method, environment.get_cc_api_key())
-            try:
-                requests.post(url=url, data=description)
-            except Exception as ex1:
-                LOGGER.error('Failed to report to control center')
-                LOGGER.exception(ex1)
+        cc.report_to_control_center("ok" if age >= 0 and age < 24 else "fail", description)
 
         return last_backup_timestamp, last_modified, last_pruned
     except Exception as ex:
-        LOGGER.error('failed to retrieve status of offsite repository')
+        LOGGER.error("failed to retrieve status of offsite repository")
         LOGGER.exception(ex)
+        cc.report_to_control_center("fail", "failed to retrieve status of offsite repository: " + str(ex))
 
 
 def get_current_offsite_process():
@@ -256,5 +251,8 @@ def touch_backup():
         with open(touch_file, mode='w') as file:
             file.write(strdatetime(datetime.now()))
     except Exception as ex:
-        LOGGER.error('failed to write to {}'.format(touch_file))
+        message = "failed to write to {}".format(touch_file)
+        LOGGER.error(message)
         LOGGER.exception(ex)
+        cc.report_to_control_center("fail", message + ": " + str(ex))
+    

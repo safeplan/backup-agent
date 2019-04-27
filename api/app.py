@@ -13,10 +13,11 @@ from flask_cors import CORS
 from apscheduler.schedulers.background import BackgroundScheduler
 import initializer
 import environment
-from flask import abort,send_file,render_template,jsonify,request,send_from_directory,redirect
+from flask import abort, send_file, render_template, jsonify, request, send_from_directory, redirect
 import time
 import worker
 import requests
+import cc
 
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger()
@@ -25,7 +26,8 @@ SCHEDULER = BackgroundScheduler()
 
 app = connexion.App(__name__, specification_dir='./swagger/')
 
-FILE_BASE_DIR=os.environ.get("SAFEPLAN_BROWSE_BASE_DIR",'/var/safeplan/history/archives')
+FILE_BASE_DIR = os.environ.get("SAFEPLAN_BROWSE_BASE_DIR", '/var/safeplan/history/archives')
+
 
 @app.route('/history', defaults={'req_path': ''})
 @app.route('/history/<path:req_path>')
@@ -54,11 +56,13 @@ def send_browser(path):
     worker.mount()
     return send_from_directory('browse', path)
 
+
 @app.route('/browse')
 @app.route('/browse/')
 def start_browser():
     worker.mount()
     return redirect("/browse/index.html", code=302)
+
 
 @app.route('/filemanager',  methods=['POST'])
 def list_files():
@@ -69,77 +73,72 @@ def list_files():
         results = []
         if (os.path.exists(abs_path) and os.path.isdir(abs_path)):
             for file in os.listdir(abs_path):
-              file_full_path = os.path.join(abs_path,file)
-              is_dir = os.path.isdir(file_full_path)
-              results.append({
-                "name": file, 
-                "rights" : ("d" if is_dir else "-") + "r--r--r--",
-                "size" : str(os.path.getsize(file_full_path)),
-                "date" : time.strftime("%Y-%m-%d %H:%M:%S",time.gmtime(os.path.getmtime(file_full_path))),
-                "type" : "dir" if is_dir else "file"
+                file_full_path = os.path.join(abs_path, file)
+                is_dir = os.path.isdir(file_full_path)
+                results.append({
+                    "name": file,
+                    "rights": ("d" if is_dir else "-") + "r--r--r--",
+                    "size": str(os.path.getsize(file_full_path)),
+                    "date": time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(os.path.getmtime(file_full_path))),
+                    "type": "dir" if is_dir else "file"
                 }
-              )
+                )
 
         return jsonify({"result": results})
     else:
-        return jsonify({"result": {"success": False, "error" : "unhandled action"}})
+        return jsonify({"result": {"success": False, "error": "unhandled action"}})
+
 
 @app.route('/filemanager',  methods=['GET'])
 def download_file():
     worker.mount()
     if request.args.get('action', '') == 'download':
-        abs_path = os.path.join(FILE_BASE_DIR, request.args.get('path', '').strip('/'))        
+        abs_path = os.path.join(FILE_BASE_DIR, request.args.get('path', '').strip('/'))
         return send_file(abs_path)
 
     else:
-        return jsonify({"result": {"success": False, "error" : "unhandled action"}})
+        return jsonify({"result": {"success": False, "error": "unhandled action"}})
 
 
 def shutdown_handler(signum, frame):
     """stops the scheduler when shutting down"""
+    cc.report_to_control_center("incident", "backup-agent shutting down (received signal %d)", signum)
     LOGGER.info("Received signal %d, shutting down scheduler", signum)
     SCHEDULER.shutdown()
     LOGGER.info("Shutdown completed")
 
+
 def start_swagger():
     """Starting the swagger-served api"""
-    app.add_api('swagger.yaml', arguments={'host':'{}:8080'.format(environment.get_ip_address())} )
+    app.add_api('swagger.yaml', arguments={'host': '{}:8080'.format(environment.get_ip_address())})
     CORS(app.app)
-  
-    app.run(port=8080, server='tornado', debug=True if os.environ.get('DEBUG',0) == "1" else False)
+
+    app.run(port=8080, server='tornado', debug=True if os.environ.get('DEBUG', 0) == "1" else False)
     #app.run(port=8080, debug=True)
 
-def report_to_control_center(status, message):
-    if environment.get_cc_api_key():
-        url = "https://control-center.armstrongconsulting.com/api/agent/SAFEPLAN_{}/{}?parentApiKey={}".format(
-            environment.get_safeplan_id(), status, environment.get_cc_api_key())
-        try:
-            requests.post(url=url, data=message)
-        except Exception as ex1:
-            LOGGER.error('Failed to report to control center')
-            LOGGER.exception(ex1)
-        
+
 if __name__ == '__main__':
     if not environment.get_safeplan_id():
         sys.exit('SAFEPLAN_ID environment variable not set, exiting.')
-    
+
     all_paths_ok, problematic_path = environment.check_paths()
     if not all_paths_ok:
-        sys.exit("Unable to access path {0}".format(problematic_path))
-        
+        message = "Unable to access path {0}".format(problematic_path)
+        cc.report_to_control_center("fail", message)
+        sys.exit(message)
 
     logging.basicConfig(level=logging.INFO)
 
-    #Log (rotated) to backup-agent.log
+    # Log (rotated) to backup-agent.log
     logfile = os.path.join(environment.PATH_WORK, "backup-agent.log")
     fileHandler = logging.handlers.RotatingFileHandler(logfile, maxBytes=50000000, backupCount=5)
     fileHandler.setFormatter(logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s"))
     LOGGER.addHandler(fileHandler)
 
-    LOGGER.info("starting safeplan backup agent for device %s",os.environ['SAFEPLAN_ID']) 
- 
+    LOGGER.info("starting safeplan backup agent for device %s", os.environ['SAFEPLAN_ID'])
+
     if initializer.initialize():
-        report_to_control_center("ok", "device successfully initialized")
+        cc.report_to_control_center("incident", "device initialized")
         SCHEDULER.start()
         SCHEDULER.add_job(worker.do_work, 'interval', seconds=environment.EXECUTE_WORKER_EVERY_SECONDS, id='worker')
         signal.signal(signal.SIGTERM, shutdown_handler)
@@ -148,5 +147,6 @@ if __name__ == '__main__':
 
         start_swagger()
     else:
-        report_to_control_center("fail", "device initialization failed")
+        cc.report_to_control_center("fail", "device initialization failed")
         sys.exit('Initializing failed, exiting.')
+    
