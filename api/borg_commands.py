@@ -11,6 +11,7 @@ REMOTE_REPO = "ssh://{}/repos/{}/backup".format(
     environment.SAFEPLAN_SSH,
     environment.get_safeplan_id())
 
+
 def init(repo):
     """
     Initializes the local repository
@@ -22,19 +23,20 @@ def init(repo):
 
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.wait(timeout=30)
-    
+
     out, err = process.communicate()
-    
+
     if out:
         LOGGER.info(out.decode("utf-8"))
     if err:
         LOGGER.info(err.decode("utf-8"))
-    
-    if process.returncode in [0,2]: #An already initialized repository will return 2
+
+    if process.returncode in [0, 2]:  # An already initialized repository will return 2
         return True
     else:
         raise ValueError("Unexpected return code from borg while initializing the local repo")
- 
+
+
 def get_info(repo):
     """
     Get's the repo's info the repository
@@ -49,8 +51,9 @@ def get_info(repo):
     out, err = process.communicate()
 
     if err:
-        LOGGER.error("Failed to get status from repo %s. %s", repo, err.decode("utf-8"))        
+        LOGGER.error("Failed to get status from repo %s. %s", repo, err.decode("utf-8"))
     return json.loads(out.decode("utf-8"))
+
 
 def get_list(repo):
     """
@@ -66,9 +69,10 @@ def get_list(repo):
     out, err = process.communicate()
 
     if err:
-        LOGGER.error("Failed to get status from repo %s. %s", repo, err.decode("utf-8")) 
+        LOGGER.error("Failed to get status from repo %s. %s", repo, err.decode("utf-8"))
 
     return json.loads(out.decode("utf-8"))
+
 
 def break_lock(repo):
     """
@@ -82,48 +86,47 @@ def break_lock(repo):
     out, err = process.communicate()
 
     if err:
-        LOGGER.error("Failed to break lock for repo %s. %s", repo, err.decode("utf-8")) 
+        LOGGER.error("Failed to break lock for repo %s. %s", repo, err.decode("utf-8"))
 
     if out:
         LOGGER.info(out.decode("utf-8"))
 
-               
-    
-def create_archive(repo,archive_name):
+
+def create_archive(repo, archive_name):
     """
     Creates an archive
     """
 
     cmd = "borg create --list --stats --show-version --show-rc {repo}::safeplan-{archive_name} {backup_path} > {log_dir}/backup_{archive_name}.log 2>&1 </dev/null".format(
-            repo=repo, 
-            archive_name=archive_name, 
-            backup_path=environment.PATH_BACKUP,
-            log_dir=environment.PATH_WORK)
+        repo=repo,
+        archive_name=archive_name,
+        backup_path=environment.PATH_BACKUP,
+        log_dir=environment.PATH_WORK)
 
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
-    
+
     return process
+
 
 def prune(repo):
     """
     Prunes an archive
     """
 
-    cmd = "borg prune -v --list --show-rc --keep-daily=30 --keep-weekly=52 --keep-monthly=84 --keep-yearly=30 {repo}  > {log_dir}/backup_prune.log 2>&1 </dev/null".format(
-            repo=repo, 
-            log_dir=environment.PATH_WORK)
+    cmd = "borg prune -v --list --show-rc --keep-daily=90 --keep-weekly=52 --keep-monthly=84 --keep-yearly=30 {repo}  > {log_dir}/backup_prune.log 2>&1 </dev/null".format(
+        repo=repo,
+        log_dir=environment.PATH_WORK)
 
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
-    
+
     return process
+
 
 def mount(repo):
     """
     Mounts the local archive
     """
-    
+
     cmd = "borg mount --strip-components 3 --foreground {repo} {mount_point} >> {log_dir}/mount.log 2>&1 </dev/null".format(
         repo=repo,
         mount_point=environment.PATH_MOUNTPOINT,
@@ -132,7 +135,7 @@ def mount(repo):
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return process
 
-  
+
 def unmount():
     """
     (Evenutally) unmounts the local archive
@@ -143,13 +146,8 @@ def unmount():
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.wait(timeout=30)
     out, err = process.communicate()
-    
+
     if out:
         LOGGER.info(out.decode("utf-8"))
     if err:
         LOGGER.info(err.decode("utf-8"))
-
-
-
-    
-   
