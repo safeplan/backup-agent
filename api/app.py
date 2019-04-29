@@ -138,7 +138,6 @@ if __name__ == '__main__':
     LOGGER.info("starting safeplan backup agent for device %s", os.environ['SAFEPLAN_ID'])
 
     if initializer.initialize():
-        cc.report_to_control_center("incident", "device initialized")
         SCHEDULER.start()
         SCHEDULER.add_job(worker.do_work, 'interval', seconds=environment.EXECUTE_WORKER_EVERY_SECONDS, id='worker')
         signal.signal(signal.SIGTERM, shutdown_handler)
@@ -149,4 +148,3 @@ if __name__ == '__main__':
     else:
         cc.report_to_control_center("fail", "device initialization failed")
         sys.exit('Initializing failed, exiting.')
-    

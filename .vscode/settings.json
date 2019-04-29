@@ -1,8 +1,8 @@
 {
     "python.pythonPath": "/usr/local/bin/python3",
-    "python.unitTest.pyTestArgs": [
+    "python.testing.pyTestArgs": [
             "api"
         ],
-    "python.unitTest.pyTestEnabled": true
+    "python.testing.pyTestEnabled": true
     
 }
