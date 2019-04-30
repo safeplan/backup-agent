@@ -111,7 +111,7 @@ def initialize():
 
     LOGGER.info("initialized ok.")
     build_number = "?"
-    with open("buildnumber.txt", "r") as bfile:
+    with open("__buildnumber.txt", "r") as bfile:
         build_number = bfile.read()
     cc.report_to_control_center("incident", "backup-agent version {} starting up - device initialized".format(build_number))
     return True

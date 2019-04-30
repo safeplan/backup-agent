@@ -26,5 +26,5 @@ mkdir -p api/browse/node_modules/bootswatch/paper && cp fm/node_modules/bootswat
 mkdir -p api/browse/node_modules/bootswatch/fonts && cp fm/node_modules/bootswatch/fonts/* api/browse/node_modules/bootswatch/fonts
 
 # increment the build number
-cat api/buildnumber.txt | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' > tmp && sleep 1 &&  mv tmp api/buildnumber.txt
+cat api/__buildnumber.txt | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' > tmp && sleep 0.1 &&  mv tmp api/__buildnumber.txt
 
