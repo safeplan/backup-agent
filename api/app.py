@@ -103,7 +103,7 @@ def download_file():
 def shutdown_handler(signum, frame):
     # stops the scheduler when shutting down
     LOGGER.info("Received signal %d, shutting down scheduler", signum)
-    cc.report_to_control_center("incident", "backup-agent shutting down (received signal %d)", signum)
+    cc.report_to_control_center("incident", "backup-agent shutting down (received signal {})".format(signum))
     SCHEDULER.shutdown()
     LOGGER.info("Shutdown completed")
 
