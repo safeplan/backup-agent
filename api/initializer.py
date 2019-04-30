@@ -110,6 +110,8 @@ def initialize():
     worker.fetch_offsite_status()
 
     LOGGER.info("initialized ok.")
-    cc.report_to_control_center("incident", "backup-agent starting up - device initialized")
+    build_number = "?"
+    with open("buildnumber.txt", "r") as bfile:
+        build_number = bfile.read()
+    cc.report_to_control_center("incident", "backup-agent version {} starting up - device initialized".format(build_number))
     return True
-    

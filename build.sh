@@ -24,3 +24,7 @@ mkdir -p api/browse/node_modules/ng-file-upload/dist && cp fm/node_modules/ng-fi
 mkdir -p api/browse/node_modules/bootstrap/dist/js && cp fm/node_modules/bootstrap/dist/js/bootstrap.min.js api/browse/node_modules/bootstrap/dist/js/bootstrap.min.js
 mkdir -p api/browse/node_modules/bootswatch/paper && cp fm/node_modules/bootswatch/paper/bootstrap.min.css api/browse/node_modules/bootswatch/paper/bootstrap.min.css
 mkdir -p api/browse/node_modules/bootswatch/fonts && cp fm/node_modules/bootswatch/fonts/* api/browse/node_modules/bootswatch/fonts
+
+# increment the build number
+cat api/buildnumber.txt | awk -F. -v OFS=. 'NF==1{print ++$NF}; NF>1{if(length($NF+1)>length($NF))$(NF-1)++; $NF=sprintf("%0*d", length($NF), ($NF+1)%(10^length($NF))); print}' > tmp && sleep 1 &&  mv tmp api/buildnumber.txt
+
