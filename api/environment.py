@@ -25,6 +25,7 @@ FORCED_MODE = None
 
 EXECUTE_WORKER_EVERY_SECONDS = 60
 
+
 def check_paths():
     if not os.access(PATH_BACKUP, os.W_OK):
         return False, PATH_BACKUP
@@ -40,12 +41,14 @@ def check_paths():
 
     return True, None
 
+
 def is_online():
-    """Checks if the environment is OK so that the safeplan agent can operate"""
+    # Checks if the environment is OK so that the safeplan agent can operate
     return try_connect("https://safeplan.at") or try_connect("https://google.at")
 
+
 def try_connect(url):
-    """Retruns true if the connect was successful"""
+    # Returns true if the connect was successful
     try:
         requests.get(url)
         return True
@@ -53,29 +56,31 @@ def try_connect(url):
         LOGGER.error("Failed to connect to %s", url)
         return False
 
+
 def get_ip_address():
-   """
-   Returns the IP address provided by the ipaddress file located in the config path
+    """
+    Returns the IP address provided by the ipaddress file located in the config path
 
-   on a safeplan device, set it as follows
-   $(ip -4 addr show eth0| grep -Po 'inet \K[\d.]+') > ipadress
-   """
+    on a safeplan device, set it as follows
+    $(ip -4 addr show eth0| grep -Po 'inet \K[\d.]+') > ipadress
+    """
 
-   
-   if os.path.exists(FILENAME_IP_ADDRESS):
-     with open(FILENAME_IP_ADDRESS, 'r') as file:
-        ip_address = file.read()
-        if len(ip_address)>0:
-            return ip_address.strip()
+    if os.path.exists(FILENAME_IP_ADDRESS):
+        with open(FILENAME_IP_ADDRESS, 'r') as file:
+            ip_address = file.read()
+            if len(ip_address) > 0:
+                return ip_address.strip()
 
-   return 'localhost'
+    return 'localhost'
+
 
 def get_cc_api_key():
-    if not 'CC_API_KEY' in os.environ :
+    if not 'CC_API_KEY' in os.environ:
         return None
 
     return os.environ['CC_API_KEY']
-    
+
+
 def get_safeplan_id():
     """
     Returns the assigned safeplan id
@@ -86,6 +91,7 @@ def get_safeplan_id():
 
     return os.environ['SAFEPLAN_ID']
 
+
 def get_rsa_public_key():
     """
     Returns the device's public key
@@ -93,12 +99,14 @@ def get_rsa_public_key():
     with open(FILENAME_PUBLIC_KEY, 'r') as file:
         return file.read()
 
+
 def get_borg_passphrase():
     """
     Returns the device's public key
     """
     with open(FILENAME_BORG_PASSPHRASE, 'r') as file:
         return file.read()
+
 
 def get_device_secret():
     """
@@ -108,23 +116,26 @@ def get_device_secret():
     if os.path.exists(FILENAME_DEVICE_SECRET):
         with open(FILENAME_DEVICE_SECRET, 'r') as file:
             return file.read().strip()
-    
+
     return None
+
 
 def get_current_mode():
     """
     backup if between 00:00 and 6:00 am, idle otherwise
     """
     if int(datetime.now().hour) >= 0 and int(datetime.now().hour) < 4:
-      return 'backup'
-    elif int(datetime.now().hour) >=5 and int(datetime.now().hour) < 6:
-      return 'cleanup'
+        return 'backup'
+    elif int(datetime.now().hour) >= 5 and int(datetime.now().hour) < 6:
+        return 'cleanup'
     else:
-      return 'idle'
+        return 'idle'
+
 
 def set_forced_mode(mode):
     global FORCED_MODE
     FORCED_MODE = mode
+
 
 def get_forced_mode():
     global FORCED_MODE
