@@ -16,6 +16,7 @@ LOGGER = logging.getLogger()
 mount_process = None
 offsite_archive_process = None
 offsite_archive_process_started = None
+offsite_archive_logfile_name = None
 last_backup_timestamp = None
 last_modified = None
 last_pruned = None
@@ -32,6 +33,7 @@ def do_work():
     global mount_process
     global offsite_archive_process
     global offsite_archive_process_started
+    global offsite_archive_logfile_name
     global last_backup_timestamp
     global last_modified
     global last_pruned
@@ -67,6 +69,15 @@ def do_work():
 
         if offsite_archive_process_just_finished or not last_backup_timestamp:
             last_backup_timestamp, last_modified, last_pruned = fetch_offsite_status()
+            if offsite_archive_process_just_finished:  # send the log file summary to control-center
+                try:
+                    if offsite_archive_logfile_name and os.path.isfile(offsite_archive_logfile_name):
+                        with open(offsite_archive_logfile_name, "rt") as log_file:
+                            summary = "\n".join(tail(log_file, lines=16))
+                            cc.report_to_control_center("incident", "backup log: {}".format(summary))
+                except Exception as ex:
+                    LOGGER.error('failed to send log file to control center')
+                    LOGGER.exception(ex)
             executed_operation = 'fetched_status'
 
         if environment.get_forced_mode():
@@ -92,15 +103,18 @@ def do_work():
             try:
                 LOGGER.info("Starting backup")
                 borg_commands.break_lock(borg_commands.REMOTE_REPO)
-                offsite_archive_process = borg_commands.create_archive(borg_commands.REMOTE_REPO, "offsite_" + current_timestamp.strftime("%Y-%m-%dT%H:%M:%S"))
+                archive_name = "offsite_" + current_timestamp.strftime("%Y-%m-%dT%H:%M:%S")
+                offsite_archive_logfile_name = os.path.join(environment.PATH_WORK, "backup_{}.log".format(archive_name))
+                offsite_archive_process = borg_commands.create_archive(borg_commands.REMOTE_REPO, archive_name)
                 offsite_archive_process_started = datetime.now()
                 LOGGER.info("Backup process has pid {}".format(offsite_archive_process.pid))
+                cc.report_to_control_center("incident", "backup to archive {} started".format(archive_name))
                 executed_operation = 'started_backup'
 
             except Exception as ex:
-                LOGGER.error('failed to start backup process')
+                LOGGER.error('failed to start backup')
                 LOGGER.exception(ex)
-                cc.report_to_control_center("fail", "failed to start backup process: " + str(ex))
+                cc.report_to_control_center("fail", "failed to start backup: " + str(ex))
 
         elif action == 'prune':
             try:
@@ -109,10 +123,13 @@ def do_work():
                 offsite_archive_process = borg_commands.prune(borg_commands.REMOTE_REPO)
                 offsite_archive_process_started = datetime.now()
                 LOGGER.info("Prune process has pid {}".format(offsite_archive_process.pid))
+                cc.report_to_control_center("incident", "pruning started")
                 executed_operation = 'started_prune'
             except Exception as ex:
                 LOGGER.error('failed to start prune process')
                 LOGGER.exception(ex)
+                cc.report_to_control_center("incident", "pruning failed: {}".format(str(ex)))
+
         elif action == 'idle':
             if not mount_process:
                 mount(True)
@@ -255,4 +272,36 @@ def touch_backup():
         LOGGER.error(message)
         LOGGER.exception(ex)
         cc.report_to_control_center("fail", message + ": " + str(ex))
-    
+
+
+def tail(f, lines=1, _buffer=4098):
+    """Tail a file and get X lines from the end"""
+    # place holder for the lines found
+    lines_found = []
+
+    # block counter will be multiplied by buffer
+    # to get the block size from the end
+    block_counter = -1
+
+    # loop until we find X lines
+    while len(lines_found) < lines:
+        try:
+            f.seek(block_counter * _buffer, os.SEEK_END)
+        except IOError:  # either file is too small, or too many lines requested
+            f.seek(0)
+            lines_found = f.readlines()
+            break
+
+        lines_found = f.readlines()
+
+        # we found enough lines, get out
+        # Removed this line because it was redundant the while will catch
+        # it, I left it for history
+        # if len(lines_found) > lines:
+        #    break
+
+        # decrement the block counter to get the
+        # next X bytes
+        block_counter -= 1
+
+    return lines_found[-lines:]

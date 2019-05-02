@@ -26,7 +26,7 @@ SCHEDULER = BackgroundScheduler()
 
 app = connexion.App(__name__, specification_dir='./swagger/')
 
-FILE_BASE_DIR = os.environ.get("SAFEPLAN_BROWSE_BASE_DIR", '/var/safeplan/history/archives')
+FILE_BASE_DIR = os.environ.get("SAFEPLAN_BROWSE_BASE_DIR", "{}/history/archives".format(environment.SAFEPLAN_DEVICE_BASE_PATH))
 
 
 @app.route('/history', defaults={'req_path': ''})
@@ -81,9 +81,7 @@ def list_files():
                     "size": str(os.path.getsize(file_full_path)),
                     "date": time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(os.path.getmtime(file_full_path))),
                     "type": "dir" if is_dir else "file"
-                }
-                )
-
+                })
         return jsonify({"result": results})
     else:
         return jsonify({"result": {"success": False, "error": "unhandled action"}})
@@ -104,7 +102,8 @@ def shutdown_handler(signum, frame):
     # stops the scheduler when shutting down
     LOGGER.info("Received signal %d, shutting down scheduler", signum)
     cc.report_to_control_center("incident", "backup-agent shutting down (received signal {})".format(signum))
-    SCHEDULER.shutdown()
+    if SCHEDULER.running:
+        SCHEDULER.shutdown()
     LOGGER.info("Shutdown completed")
 
 
@@ -113,8 +112,7 @@ def start_swagger():
     app.add_api('swagger.yaml', arguments={'host': '{}:8080'.format(environment.get_ip_address())})
     CORS(app.app)
 
-    app.run(port=8080, server='tornado', debug=True if os.environ.get('DEBUG', 0) == "1" else False)
-    #app.run(port=8080, debug=True)
+    app.run(port=8080, server='tornado')
 
 
 if __name__ == '__main__':

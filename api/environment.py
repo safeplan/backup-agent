@@ -8,20 +8,22 @@ from dateutil import tz
 
 LOGGER = logging.getLogger()
 
-PATH_BACKUP = "/var/safeplan/backup"
-PATH_CONFIG = "/var/safeplan/config"
-PATH_MOUNTPOINT = "/var/safeplan/history/archives"
-PATH_SSH = os.path.join(str(Path.home()), ".ssh")
-PATH_WORK = "/var/safeplan/work"
+SAFEPLAN_DEVICE_BASE_PATH = os.environ.get("SAFEPLAN_DEVICE_BASE_PATH", "/var/safeplan")
 
-FILENAME_BORG_PASSPHRASE = "/var/safeplan/config/borg_passphrase"
-FILENAME_DEVICE_SECRET = "/var/safeplan/config/device_secret"
+PATH_BACKUP = "{}/backup".format(SAFEPLAN_DEVICE_BASE_PATH)
+PATH_CONFIG = "{}/config".format(SAFEPLAN_DEVICE_BASE_PATH)
+PATH_MOUNTPOINT = "{}/history/archives".format(SAFEPLAN_DEVICE_BASE_PATH)
+PATH_WORK = "{}/work".format(SAFEPLAN_DEVICE_BASE_PATH)
+PATH_SSH = os.path.join(str(Path.home()), ".ssh")
+
+FILENAME_BORG_PASSPHRASE = "{}/config/borg_passphrase".format(SAFEPLAN_DEVICE_BASE_PATH)
+FILENAME_DEVICE_SECRET = "{}/config/device_secret".format(SAFEPLAN_DEVICE_BASE_PATH)
 FILENAME_PRIVATE_KEY = os.path.join(PATH_SSH, "id_rsa")
 FILENAME_PUBLIC_KEY = os.path.join(PATH_SSH, "id_rsa.pub")
 FILENAME_IP_ADDRESS = os.path.join(PATH_CONFIG, "ipaddress")
 SAFEPLAN_SSH = "safeplan-device@backup.safeplan.at:2222"
 
-FORCED_MODE = None
+FORCED_MODE = os.environ.get("FORCED_MODE")
 
 EXECUTE_WORKER_EVERY_SECONDS = 60
 
@@ -75,10 +77,7 @@ def get_ip_address():
 
 
 def get_cc_api_key():
-    if not 'CC_API_KEY' in os.environ:
-        return None
-
-    return os.environ['CC_API_KEY']
+    return os.environ.get('CC_API_KEY')
 
 
 def get_safeplan_id():
@@ -140,3 +139,7 @@ def set_forced_mode(mode):
 def get_forced_mode():
     global FORCED_MODE
     return FORCED_MODE
+
+
+def get_ssh_key_path():
+    return PATH_SSH

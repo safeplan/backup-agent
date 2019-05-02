@@ -18,5 +18,4 @@ def report_to_control_center(status, message):
             LOGGER.error('Failed to report to control center')
             LOGGER.exception(ex1)
     else:
-        LOGGER.error("can't report to control center: cc_api_key is not set")
-        
+        LOGGER.warn("control-center reporting disabled (cc_api_key is not set)")

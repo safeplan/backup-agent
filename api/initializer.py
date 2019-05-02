@@ -57,9 +57,9 @@ def create_rsa_keys():
         os.makedirs(environment.PATH_CONFIG, 0o700)
 
     if not has_rsa_keys():
-
         LOGGER.warning("creating new rsa keys")
-        process = subprocess.Popen("ssh-keygen -f /root/.ssh/id_rsa -t rsa -N ''", shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        process = subprocess.Popen("ssh-keygen -f {}/id_rsa -t rsa -N ''".format(environment.get_ssh_key_path()), shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         process.wait(timeout=30)
 
         out, err = process.communicate()
@@ -73,8 +73,8 @@ def create_rsa_keys():
         if not process.returncode in [0]:
             raise ValueError("Unexpected return code from ssh-keygen")
 
-        with open("/root/.ssh/config", mode='w') as file:
-            file.writelines("Host *\n    StrictHostKeyChecking no")
+        with open("{}/config".format(environment.get_ssh_key_path()), mode='w') as file:
+            file.writelines("Host *\n   StrictHostKeyChecking no")
 
     else:
         LOGGER.info("RSA keys have already been created, reusing existing RSA keys")
@@ -92,8 +92,7 @@ def initialize():
         create_borg_passphrase()
 
     LOGGER.info("submitting public key to safeplan server")
-    safeplan_server.device_api.device_initialize(environment.get_safeplan_id(),
-                                                 InitializationInformation(rsa_public_key=environment.get_rsa_public_key()))
+    safeplan_server.device_api.device_initialize(environment.get_safeplan_id(), InitializationInformation(rsa_public_key=environment.get_rsa_public_key()))
 
     os.environ['BORG_CACHE_DIR'] = environment.PATH_WORK
     os.environ['BORG_BASE_DIR'] = environment.PATH_CONFIG
@@ -110,8 +109,13 @@ def initialize():
     worker.fetch_offsite_status()
 
     LOGGER.info("initialized ok.")
+
+    # read the build number from file - its updated by the build.sh script
     build_number = "?"
     with open("__buildnumber.txt", "r") as bfile:
         build_number = bfile.read()
+
+    # report an initialization incident to the control-center so we know the device has started up
     cc.report_to_control_center("incident", "backup-agent version {} starting up - device initialized".format(build_number))
+
     return True

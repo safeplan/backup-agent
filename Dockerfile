@@ -1,4 +1,5 @@
 FROM python:3.6
+# note: if you move to python 3.7, async is a keyword and its used as a property name in the the safeplan api (and so it will fail).
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
