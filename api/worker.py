@@ -225,16 +225,34 @@ def strdatetime(dt):
     return dt.strftime("%Y-%m-%d %H:%M:%S") if dt else ""
 
 
+def is_a_mount_point(path):
+    cmd = "mountpoint -q {}".format(path)
+    returncode = subprocess.call(cmd, shell=True)
+    if returncode == 0:
+        return True
+    else:
+        return False
+
+
 def unmount():
     global mount_process
+
+    if not is_a_mount_point(environment.PATH_MOUNTPOINT):
+        mount_process = None
+        return
+
     if mount_process != None:
         LOGGER.info("Unmounting mount process {}".format(mount_process.pid))
 
     borg_commands.unmount()
-    mount_process = None
 
-    if(os.path.exists(environment.PATH_MOUNTPOINT)):
-        os.rmdir(environment.PATH_MOUNTPOINT)
+    if is_a_mount_point(environment.PATH_MOUNTPOINT):
+        LOGGER.error("After unmount, {} is still mounted".format(environment.PATH_MOUNTPOINT))
+    else:
+        mount_process = None
+        if os.path.exists(environment.PATH_MOUNTPOINT):
+            os.rmdir(environment.PATH_MOUNTPOINT)
+        cc.report_to_control_center("incident", "archive unmounted successfully")
 
 
 def mount(forced=False):
@@ -255,11 +273,12 @@ def mount(forced=False):
         if not os.path.exists(environment.PATH_MOUNTPOINT):
             os.makedirs(environment.PATH_MOUNTPOINT, 0o700)
         mount_process = borg_commands.mount(borg_commands.REMOTE_REPO)
+        cc.report_to_control_center("incident", "archive mounted successfully")
         LOGGER.info("Offsite archive mounted by process {}".format(mount_process.pid))
-
     except Exception as ex:
         LOGGER.error('failed to mount offsite archive')
         LOGGER.exception(ex)
+        cc.report_to_control_center("incident", "failed to mount archive (" + str(ex) + ")")
 
 
 def touch_backup():

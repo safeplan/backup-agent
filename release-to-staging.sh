@@ -7,8 +7,8 @@ docker build -t safeplan/backup-agent:STAGING .
 docker push safeplan/backup-agent:STAGING
 
 
-echo "*****************************************************************"
+echo "***************************************************************************************************"
 echo "You released the :STAGING tagged version of the agent"
-echo "which is only used by specific test devices (currently just Roger's Synology)"
+echo "which is only used by specific test devices (currently safeplan-40322 and Roger's Synology at home)"
 echo "To release to production devices, call ./release-to-production.sh"
-echo "*****************************************************************"
+echo "***************************************************************************************************"

@@ -138,7 +138,7 @@ def mount(repo):
 
 def unmount():
     """
-    (Evenutally) unmounts the local archive
+    Unmounts the local archive
     """
 
     cmd = "borg umount {}".format(environment.PATH_MOUNTPOINT)

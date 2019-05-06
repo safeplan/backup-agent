@@ -6,7 +6,7 @@
                     <i class="glyphicon glyphicon-folder-open" ng-show="item.model.type === 'dir'"></i>
                     <i class="glyphicon glyphicon-file" data-ext="{{ item.model.name | fileExtension }}" ng-show="item.model.type === 'file'" ng-class="{'item-extension': config.showExtensionIcons}"></i>
                 </div>
-                {{item.model.name | strLimit : 11 }}
+                {{item.model.name | strLimit : 36 }}
             </a>
         </div>
     </div>
@@ -18,7 +18,7 @@
     <div class="alert alert-warning" ng-show="!fileNavigator.requesting && fileNavigator.fileList.length < 1 && !fileNavigator.error">
         {{"no_files_in_folder" | translate}}...
     </div>
-    
+
     <div class="alert alert-danger" ng-show="!fileNavigator.requesting && fileNavigator.error">
         {{ fileNavigator.error }}
     </div>
