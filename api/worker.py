@@ -237,22 +237,15 @@ def is_a_mount_point(path):
 def unmount():
     global mount_process
 
-    if not is_a_mount_point(environment.PATH_MOUNTPOINT):
-        mount_process = None
-        return
-
     if mount_process != None:
         LOGGER.info("Unmounting mount process {}".format(mount_process.pid))
 
     borg_commands.unmount()
 
-    if is_a_mount_point(environment.PATH_MOUNTPOINT):
-        LOGGER.error("After unmount, {} is still mounted".format(environment.PATH_MOUNTPOINT))
-    else:
-        mount_process = None
-        if os.path.exists(environment.PATH_MOUNTPOINT):
-            os.rmdir(environment.PATH_MOUNTPOINT)
-        cc.report_to_control_center("incident", "archive unmounted successfully")
+    mount_process = None
+    if os.path.exists(environment.PATH_MOUNTPOINT):
+        os.rmdir(environment.PATH_MOUNTPOINT)
+    cc.report_to_control_center("incident", "archive unmounted")
 
 
 def mount(forced=False):
@@ -273,8 +266,8 @@ def mount(forced=False):
         if not os.path.exists(environment.PATH_MOUNTPOINT):
             os.makedirs(environment.PATH_MOUNTPOINT, 0o700)
         mount_process = borg_commands.mount(borg_commands.REMOTE_REPO)
-        cc.report_to_control_center("incident", "archive mounted successfully")
         LOGGER.info("Offsite archive mounted by process {}".format(mount_process.pid))
+        cc.report_to_control_center("incident", "archive mounted")
     except Exception as ex:
         LOGGER.error('failed to mount offsite archive')
         LOGGER.exception(ex)
