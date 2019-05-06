@@ -92,7 +92,6 @@ def initialize():
     cc.report_to_control_center("incident", "backup-agent version {} starting up - initializing device".format(build_number))
 
     if not has_rsa_keys():
-        cc.report_to_control_center("incident", "creating rsa keys")
         create_rsa_keys()
 
     if not has_borg_passphrase():
