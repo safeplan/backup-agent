@@ -82,13 +82,21 @@ def create_rsa_keys():
 
 def initialize():
     """
-    Initializes the device with the device
+    Initializes the device
     """
 
+    # read the build number from file - its updated by the build.sh script
+    build_number = "?"
+    with open("__buildnumber.txt", "r") as bfile:
+        build_number = bfile.read()
+    cc.report_to_control_center("incident", "backup-agent version {} starting up - initializing device".format(build_number))
+
     if not has_rsa_keys():
+        cc.report_to_control_center("incident", "creating rsa keys")
         create_rsa_keys()
 
     if not has_borg_passphrase():
+        cc.report_to_control_center("incident", "creating new borg passphrase")
         create_borg_passphrase()
 
     LOGGER.info("submitting public key to safeplan server")
@@ -110,12 +118,7 @@ def initialize():
 
     LOGGER.info("initialized ok.")
 
-    # read the build number from file - its updated by the build.sh script
-    build_number = "?"
-    with open("__buildnumber.txt", "r") as bfile:
-        build_number = bfile.read()
-
     # report an initialization incident to the control-center so we know the device has started up
-    cc.report_to_control_center("incident", "backup-agent version {} starting up - device initialized".format(build_number))
+    cc.report_to_control_center("incident", "device initialized")
 
     return True
