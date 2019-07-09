@@ -21,6 +21,7 @@ def init(repo):
         --encryption=repokey \
         {}".format(repo)
 
+    LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.wait(timeout=30)
 
@@ -39,12 +40,13 @@ def init(repo):
 
 def get_info(repo):
     """
-    Get's the repo's info the repository
+    Get's the repo's info from the repository
     """
     cmd = "borg info \
         --json \
         {}".format(repo)
 
+    LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.wait(timeout=30)
 
@@ -63,6 +65,7 @@ def get_list(repo):
         --json \
         {}".format(repo)
 
+    LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.wait(timeout=30)
 
@@ -80,6 +83,7 @@ def break_lock(repo):
     """
     cmd = "borg break-lock {}".format(repo)
 
+    LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.wait(timeout=30)
 
@@ -103,6 +107,7 @@ def create_archive(repo, archive_name):
         backup_path=environment.PATH_BACKUP,
         log_dir=environment.PATH_WORK)
 
+    LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     return process
@@ -116,7 +121,7 @@ def prune(repo):
     cmd = "borg prune -v --list --show-rc --keep-daily=90 --keep-weekly=52 --keep-monthly=84 --keep-yearly=30 {repo}  > {log_dir}/backup_prune.log 2>&1 </dev/null".format(
         repo=repo,
         log_dir=environment.PATH_WORK)
-
+    LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
     return process
@@ -131,7 +136,7 @@ def mount(repo):
         repo=repo,
         mount_point=environment.PATH_MOUNTPOINT,
         log_dir=environment.PATH_WORK)
-
+    LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return process
 
@@ -141,9 +146,9 @@ def unmount():
     Unmounts the local archive
     """
 
-    # changed form borg umount to umount -l (lazy unmount, since this correctly deals with the situation when the mount is in used by a CIFS client etc - see #234289)
+    # changed from borg umount to umount -l (lazy unmount, since this correctly deals with the situation when the mount is in used by a CIFS client etc - see #234289)
     cmd = "umount -l {}".format(environment.PATH_MOUNTPOINT)
-
+    LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.wait(timeout=30)
     out, err = process.communicate()
