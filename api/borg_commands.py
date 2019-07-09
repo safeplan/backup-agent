@@ -127,7 +127,7 @@ def mount(repo):
     Mounts the local archive
     """
 
-    cmd = "borg mount --strip-components 3 --foreground {repo} {mount_point} >> {log_dir}/mount.log 2>&1 </dev/null".format(
+    cmd = "borg mount --strip-components 3 -o nonempty,allow_other --foreground {repo} {mount_point} >> {log_dir}/mount.log 2>&1 </dev/null".format(
         repo=repo,
         mount_point=environment.PATH_MOUNTPOINT,
         log_dir=environment.PATH_WORK)
@@ -141,7 +141,8 @@ def unmount():
     Unmounts the local archive
     """
 
-    cmd = "borg umount {}".format(environment.PATH_MOUNTPOINT)
+    # changed form borg umount to umount -l (lazy unmount, since this correctly deals with the situation when the mount is in used by a CIFS client etc - see #234289)
+    cmd = "umount -l {}".format(environment.PATH_MOUNTPOINT)
 
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.wait(timeout=30)
