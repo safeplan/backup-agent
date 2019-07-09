@@ -103,7 +103,7 @@ def do_work():
             try:
                 LOGGER.info("Starting backup")
                 borg_commands.break_lock(borg_commands.REMOTE_REPO)
-                archive_name = "offsite_" + current_timestamp.strftime("%Y-%m-%dT%H:%M:%S")
+                archive_name = current_timestamp.strftime("%Y_%m_%dT%H_%M_%S")
                 offsite_archive_logfile_name = os.path.join(environment.PATH_WORK, "backup_{}.log".format(archive_name))
                 offsite_archive_process = borg_commands.create_archive(borg_commands.REMOTE_REPO, archive_name)
                 offsite_archive_process_started = datetime.now()
@@ -243,8 +243,6 @@ def unmount():
     borg_commands.unmount()
 
     mount_process = None
-    if os.path.exists(environment.PATH_MOUNTPOINT):
-        os.rmdir(environment.PATH_MOUNTPOINT)
     cc.report_to_control_center("incident", "archive unmounted")
 
 
@@ -263,8 +261,6 @@ def mount(forced=False):
     try:
         unmount()
         LOGGER.info("Now mounting offsite archive")
-        if not os.path.exists(environment.PATH_MOUNTPOINT):
-            os.makedirs(environment.PATH_MOUNTPOINT, 0o700)
         mount_process = borg_commands.mount(borg_commands.REMOTE_REPO)
         LOGGER.info("Offsite archive mounted by process {}".format(mount_process.pid))
         cc.report_to_control_center("incident", "archive mounted")

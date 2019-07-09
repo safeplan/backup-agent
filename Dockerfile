@@ -13,16 +13,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     pkg-config 
 
 # install nfs server 
-RUN echo exit 0 > /usr/sbin/policy-rc.d
-RUN mkdir /nfs
-RUN mkdir /run/sendsigs.omit.d # required for starting rpcbind
-RUN apt install -y nfs-kernel-server
-RUN echo "/nfs *(rw,fsid=0,sync,insecure)" > /etc/exports
+#RUN echo exit 0 > /usr/sbin/policy-rc.d
+#RUN mkdir /nfs
+#RUN mkdir /run/sendsigs.omit.d # required for starting rpcbind
+#RUN apt install -y nfs-kernel-server
+#RUN echo "/nfs *(rw,fsid=0,sync,insecure)" > /etc/exports
 
 RUN rm -rf /var/lib/apt/lists/*
 
-
 RUN pip install --no-cache-dir borgbackup==1.1.9 llfuse
+RUN echo "user_allow_other" >> /etc/fuse.conf
 
 VOLUME ["/var/safeplan/backup" , "/var/safeplan/config", "/var/safeplan/repo", "/var/safeplan/work", "/root/.ssh" , "/var/safeplan/history"]
 
