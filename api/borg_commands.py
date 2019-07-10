@@ -146,8 +146,7 @@ def unmount():
     Unmounts the local archive
     """
 
-    # changed from borg umount to umount -l (lazy unmount, since this correctly deals with the situation when the mount is in used by a CIFS client etc - see #234289)
-    cmd = "umount -l {}".format(environment.PATH_MOUNTPOINT)
+    cmd = "borg umount {}".format(environment.PATH_MOUNTPOINT)
     LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process.wait(timeout=30)

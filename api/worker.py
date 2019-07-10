@@ -76,7 +76,7 @@ def do_work():
                             summary = "\n".join(tail(log_file, lines=16))
                             cc.report_to_control_center("incident", "backup log: {}".format(summary))
                 except Exception as ex:
-                    LOGGER.error('failed to send log file to control center')
+                    LOGGER.error('failed to send backup log summary to control center')
                     LOGGER.exception(ex)
             executed_operation = 'fetched_status'
 
@@ -84,9 +84,9 @@ def do_work():
             action = environment.get_forced_mode()
             environment.set_forced_mode(None)
         else:
-            if not last_backup_timestamp:
+            if not last_backup_timestamp:  # if this is the first backup
                 action = 'backup'
-            elif environment.get_current_mode() == 'backup' and (datetime.now() - last_backup_timestamp).total_seconds() > MAX_AGE_SECONDS:
+            elif environment.get_current_mode() == 'backup' and (datetime.now() - last_backup_timestamp).total_seconds() > MAX_AGE_SECONDS:  # if its time for another backup
                 action = 'backup'
             elif environment.get_current_mode() == 'cleanup' and (last_pruned == None or (datetime.now() - last_pruned).total_seconds() > MAX_AGE_SECONDS):
                 action = 'prune'
