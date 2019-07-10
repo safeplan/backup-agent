@@ -26,7 +26,7 @@ SCHEDULER = BackgroundScheduler()
 
 app = connexion.App(__name__, specification_dir='./swagger/')
 
-FILE_BASE_DIR = os.environ.get("SAFEPLAN_BROWSE_BASE_DIR", "{}/history/archives".format(environment.SAFEPLAN_DEVICE_BASE_PATH))
+FILE_BASE_DIR = os.environ.get("SAFEPLAN_BROWSE_BASE_DIR", "{}/history/backups".format(environment.SAFEPLAN_DEVICE_BASE_PATH))
 
 
 @app.route('/history', defaults={'req_path': ''})

@@ -12,7 +12,7 @@ SAFEPLAN_DEVICE_BASE_PATH = os.environ.get("SAFEPLAN_DEVICE_BASE_PATH", "/var/sa
 
 PATH_BACKUP = "{}/backup".format(SAFEPLAN_DEVICE_BASE_PATH)
 PATH_CONFIG = "{}/config".format(SAFEPLAN_DEVICE_BASE_PATH)
-PATH_MOUNTPOINT = "{}/history/archives".format(SAFEPLAN_DEVICE_BASE_PATH)
+PATH_MOUNTPOINT = "{}/history/backups".format(SAFEPLAN_DEVICE_BASE_PATH)
 PATH_WORK = "{}/work".format(SAFEPLAN_DEVICE_BASE_PATH)
 PATH_SSH = os.path.join(str(Path.home()), ".ssh")
 
