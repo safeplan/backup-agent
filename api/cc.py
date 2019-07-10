@@ -8,7 +8,7 @@ LOGGER = logging.getLogger()
 
 
 def report_to_control_center(status, message):
-    LOGGER.info("report to control center: {} {}".format(status, message))
+    LOGGER.info("report to control center: {}: {}".format(status, message))
     if environment.get_cc_api_key():
         url = "https://control-center.armstrongconsulting.com/api/agent/SAFEPLAN_{}/{}?parentApiKey={}".format(
             environment.get_safeplan_id(), status, environment.get_cc_api_key())

@@ -63,6 +63,10 @@ def do_work():
             LOGGER.info('offsite mount process {} is active'.format(mount_process.pid))
         else:
             mount_process = None
+            if is_a_mount_point(environment.PATH_MOUNTPOINT):
+                cc.report_to_control_center("incident", "archive is currently mounted")
+            else:
+                cc.report_to_control_center("incident", "archive is not currently mounted")
 
     if not offsite_archive_process:
         current_timestamp = datetime.now()
@@ -243,7 +247,12 @@ def unmount():
     borg_commands.unmount()
 
     mount_process = None
-    cc.report_to_control_center("incident", "archive unmounted")
+
+    # check if the unmount succeeded
+    if is_a_mount_point(environment.PATH_MOUNTPOINT):
+        cc.report_to_control_center("incident", "archive could not be unmounted")
+    else:
+        cc.report_to_control_center("incident", "archive unmounted OK")
 
 
 def mount(forced=False):
@@ -263,7 +272,6 @@ def mount(forced=False):
         LOGGER.info("Now mounting offsite archive")
         mount_process = borg_commands.mount(borg_commands.REMOTE_REPO)
         LOGGER.info("Offsite archive mounted by process {}".format(mount_process.pid))
-        cc.report_to_control_center("incident", "archive mounted")
     except Exception as ex:
         LOGGER.error('failed to mount offsite archive')
         LOGGER.exception(ex)
