@@ -7,6 +7,7 @@ services:
 
     environment:
       - SAFEPLAN_ID
+      - BORG_MOUNT_DATA_CACHE_ENTRIES=10 #  default is 1 which translates to 8MB, so this uses 80MB to cache access to the mounted FUSE filesystem
 
     volumes:
       - ${SAFEPLAN_BACKUP_DIR}:/var/safeplan/backup

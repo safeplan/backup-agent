@@ -73,7 +73,6 @@ def get_list(repo):
 
     if err:
         LOGGER.error("Failed to get status from repo %s. %s", repo, err.decode("utf-8"))
-
     return json.loads(out.decode("utf-8"))
 
 
@@ -109,7 +108,6 @@ def create_archive(repo, archive_name):
 
     LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
     return process
 
 
@@ -123,16 +121,15 @@ def prune(repo):
         log_dir=environment.PATH_WORK)
     LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
     return process
 
 
 def mount(repo):
     """
-    Mounts the local archive
+    Mounts the local archive and iterates the directory structure of the most recent 10 backups (to get it into local cache, so its faster when the user accesses it)
     """
 
-    cmd = "borg mount --strip-components 3 -o nonempty,allow_other --foreground {repo} {mount_point} >> {log_dir}/mount.log 2>&1 </dev/null".format(
+    cmd = "borg mount --strip-components 3 -o nonempty,allow_other {repo} {mount_point} >> {log_dir}/mount.log 2>&1 </dev/null && ls -d {mount_point}/* | tail -10 | xargs find && sleep inf".format(
         repo=repo,
         mount_point=environment.PATH_MOUNTPOINT,
         log_dir=environment.PATH_WORK)

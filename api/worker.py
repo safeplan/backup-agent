@@ -242,9 +242,12 @@ def unmount():
     global mount_process
 
     if mount_process != None:
-        LOGGER.info("Unmounting mount process {}".format(mount_process.pid))
-
-    borg_commands.unmount()
+        LOGGER.info("Unmounting, mount process {}".format(mount_process.pid))
+        mount_process.kill()
+        borg_commands.unmount()
+    else:
+        LOGGER.info("Unmounting, but there's no mount process, trying an unmount anyway")
+        borg_commands.unmount()
 
     mount_process = None
 
