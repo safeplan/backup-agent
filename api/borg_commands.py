@@ -126,10 +126,10 @@ def prune(repo):
 
 def mount(repo):
     """
-    Mounts the local archive and iterates the directory structure of the most recent 10 backups (to get it into local cache, so its faster when the user accesses it)
+    Mounts the local archive
     """
 
-    cmd = "borg mount --strip-components 3 -o nonempty,allow_other {repo} {mount_point} >> {log_dir}/mount.log 2>&1 </dev/null && ls -d {mount_point}/* | tail -10 | xargs find && sleep inf".format(
+    cmd = "borg mount --foreground --strip-components 3 -o nonempty,allow_other {repo} {mount_point} >> {log_dir}/mount.log 2>&1 </dev/null".format(
         repo=repo,
         mount_point=environment.PATH_MOUNTPOINT,
         log_dir=environment.PATH_WORK)

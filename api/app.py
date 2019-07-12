@@ -104,6 +104,7 @@ def shutdown_handler(signum, frame):
     cc.report_to_control_center("incident", "backup-agent shutting down (received signal {})".format(signum))
     if SCHEDULER.running:
         SCHEDULER.shutdown()
+    worker.shutdown()
     LOGGER.info("Shutdown completed")
 
 

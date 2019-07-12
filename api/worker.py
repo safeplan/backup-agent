@@ -20,7 +20,6 @@ offsite_archive_logfile_name = None
 last_backup_timestamp = None
 last_modified = None
 last_pruned = None
-MAX_AGE_SECONDS = 12 * 3600
 
 is_allowed_to_remount = False
 
@@ -39,6 +38,11 @@ def do_work():
     global last_pruned
 
     touch_backup()
+
+    try:
+        os.makedirs(environment.PATH_MOUNTPOINT)
+    except FileExistsError:
+        pass
 
     is_allowed_to_remount = False
     device_details = device_api.device_get_details(environment.get_safeplan_id())
@@ -78,6 +82,7 @@ def do_work():
                     if offsite_archive_logfile_name and os.path.isfile(offsite_archive_logfile_name):
                         with open(offsite_archive_logfile_name, "rt") as log_file:
                             summary = "\n".join(tail(log_file, lines=16))
+                            update_backup_status_file("{} backup completed \n {}".format(datetime.now().isoformat(), summary))
                             cc.report_to_control_center("incident", "backup log: {}".format(summary))
                 except Exception as ex:
                     LOGGER.error('failed to send backup log summary to control center')
@@ -90,9 +95,9 @@ def do_work():
         else:
             if not last_backup_timestamp:  # if this is the first backup
                 action = 'backup'
-            elif environment.get_current_mode() == 'backup' and (datetime.now() - last_backup_timestamp).total_seconds() > MAX_AGE_SECONDS:  # if its time for another backup
+            elif environment.get_current_mode() == 'backup' and (datetime.now() - last_backup_timestamp).total_seconds() > environment.MAX_AGE_SECONDS:  # if its time for another backup
                 action = 'backup'
-            elif environment.get_current_mode() == 'cleanup' and (last_pruned == None or (datetime.now() - last_pruned).total_seconds() > MAX_AGE_SECONDS):
+            elif environment.get_current_mode() == 'cleanup' and (last_pruned == None or (datetime.now() - last_pruned).total_seconds() > environment.MAX_AGE_SECONDS):  # if its time for another prune
                 action = 'prune'
             else:
                 action = 'idle'
@@ -106,6 +111,7 @@ def do_work():
         if action == 'backup':
             try:
                 LOGGER.info("Starting backup")
+                update_backup_status_file("{} backup in progress".format(datetime.now().isoformat()))
                 borg_commands.break_lock(borg_commands.REMOTE_REPO)
                 archive_name = current_timestamp.strftime("%Y_%m_%dT%H_%M_%S")
                 offsite_archive_logfile_name = os.path.join(environment.PATH_WORK, "backup_{}.log".format(archive_name))
@@ -156,6 +162,16 @@ def do_work():
 
     LOGGER.info("worker finished. Executed operation: {}".format(executed_operation))
     return executed_operation
+
+
+def update_backup_status_file(status):
+    LOGGER.info("update_backup_status_file: {}".format(status))
+    file_path = os.path.join(environment.PATH_MOUNTPOINT, "backup_status.txt")
+    try:
+        with open(file_path, mode='w') as file:
+            file.write(status)
+    except Exception as e:
+        LOGGER.error(e)
 
 
 def get_last_backed_up(repo_list):
@@ -241,23 +257,23 @@ def is_a_mount_point(path):
 def unmount():
     global mount_process
 
-    if mount_process != None:
-        LOGGER.info("Unmounting, mount process {}".format(mount_process.pid))
-        mount_process.kill()
-        borg_commands.unmount()
+    LOGGER.info("worker.unmount")
+
+    if is_a_mount_point(environment.PATH_MOUNTPOINT):
+        LOGGER.info("%s is a mount point", environment.PATH_MOUNTPOINT)
     else:
-        LOGGER.info("Unmounting, but there's no mount process, trying an unmount anyway")
+        LOGGER.info("%s is NOT a mount point", environment.PATH_MOUNTPOINT)
+
+    if mount_process != None:
+        LOGGER.info("There is a mount process with pid {}".format(mount_process.pid))
+    else:
+        LOGGER.info("There is no mount_process")
+
+    if is_a_mount_point(environment.PATH_MOUNTPOINT):
+        LOGGER.info("calling borg_commands.unmount()")
         borg_commands.unmount()
 
     mount_process = None
-
-    # check if the unmount succeeded
-    if is_a_mount_point(environment.PATH_MOUNTPOINT):
-        cc.report_to_control_center("incident", "archive could not be unmounted")
-    else:
-        cc.report_to_control_center("incident", "archive unmounted OK")
-        if os.path.exists(environment.PATH_MOUNTPOINT):
-            os.rmdir(environment.PATH_MOUNTPOINT)
 
 
 def mount(forced=False):
@@ -275,14 +291,17 @@ def mount(forced=False):
     try:
         unmount()
         LOGGER.info("Now mounting offsite archive")
-        if not os.path.exists(environment.PATH_MOUNTPOINT):
-            os.makedirs(environment.PATH_MOUNTPOINT, 0o700)
         mount_process = borg_commands.mount(borg_commands.REMOTE_REPO)
         LOGGER.info("Offsite archive mounted by process {}".format(mount_process.pid))
     except Exception as ex:
         LOGGER.error('failed to mount offsite archive')
         LOGGER.exception(ex)
         cc.report_to_control_center("incident", "failed to mount archive (" + str(ex) + ")")
+
+
+def shutdown():
+    LOGGER.info("worker.shutdown")
+    unmount()  # if you don't unmount the fuse file system, it can cause problems for the host file system (since the fuse file system is mapped into the host file system)
 
 
 def touch_backup():

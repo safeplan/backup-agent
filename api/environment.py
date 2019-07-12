@@ -27,6 +27,8 @@ FORCED_MODE = os.environ.get("FORCED_MODE")
 
 EXECUTE_WORKER_EVERY_SECONDS = 60
 
+MAX_AGE_SECONDS = 12 * 3600
+
 
 def check_paths():
     if not os.access(PATH_BACKUP, os.W_OK):
@@ -121,7 +123,7 @@ def get_device_secret():
 
 def get_current_mode():
     """
-    backup if between 00:00 and 6:00 am, idle otherwise
+    backup 00:00-4:00, cleanup 05:00-06:00, idle otherwise
     """
 
     if int(datetime.now().hour) >= 0 and int(datetime.now().hour) < 4:
