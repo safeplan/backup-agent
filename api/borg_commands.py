@@ -4,6 +4,7 @@ import logging
 import subprocess
 import environment
 import json
+from datetime import datetime
 
 LOGGER = logging.getLogger()
 #LOCAL_REPO = "{}/backup".format(environment.PATH_LOCAL_REPO)
@@ -116,7 +117,7 @@ def prune(repo):
     Prunes an archive
     """
 
-    cmd = "borg prune -v --list --show-rc --keep-daily=90 --keep-weekly=52 --keep-monthly=84 --keep-yearly=30 {repo}  > {log_dir}/backup_prune.log 2>&1 </dev/null".format(
+    cmd = "borg prune -v --list --show-rc --keep-daily=90 --keep-weekly=52 --keep-monthly=84 --keep-yearly=30 {repo} > {log_dir}/backup_prune.log 2>&1 </dev/null".format(
         repo=repo,
         log_dir=environment.PATH_WORK)
     LOGGER.info(cmd)
@@ -129,10 +130,14 @@ def mount(repo):
     Mounts the local archive
     """
 
-    cmd = "borg mount --foreground --strip-components 3 -o nonempty,allow_other {repo} {mount_point} >> {log_dir}/mount.log 2>&1 </dev/null".format(
+    log_file_path = "{}/mount.log".format(environment.PATH_WORK)
+    with open(log_file_path, mode='a') as file:
+        file.write("\n{}\n".format(datetime.now().isoformat()))
+
+    cmd = "borg mount --debug --foreground --strip-components 3 -o nonempty,allow_other {repo} {mount_point} > {log} 2>&1 </dev/null".format(
         repo=repo,
         mount_point=environment.PATH_MOUNTPOINT,
-        log_dir=environment.PATH_WORK)
+        log=log_file_path)
     LOGGER.info(cmd)
     process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return process

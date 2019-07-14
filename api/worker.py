@@ -58,14 +58,16 @@ def do_work():
         if rc is None:
             LOGGER.info('offsite archive process running since %s, pid %d', offsite_archive_process_started.strftime("%Y-%m-%dT%H:%M:%S"), offsite_archive_process.pid)
         else:
+            LOGGER.info("offsite archive process has terminated with return code {}".format(rc))
             offsite_archive_process = None
             offsite_archive_process_just_finished = True
 
     if mount_process != None:
         rc = mount_process.poll()
-        if rc is None:
+        if rc is None:  # the process is still alive
             LOGGER.info('offsite mount process {} is active'.format(mount_process.pid))
-        else:
+        else:  # the process has terminated
+            LOGGER.info("mount process has terminated with return code {}".format(rc))
             mount_process = None
             if is_a_mount_point(environment.PATH_MOUNTPOINT):
                 cc.report_to_control_center("incident", "archive is currently mounted")
@@ -106,6 +108,7 @@ def do_work():
             action, strdatetime(last_backup_timestamp), strdatetime(last_modified), strdatetime(last_pruned)))
 
         if action != 'idle':
+            LOGGER.info("action is not idle ({}), calling unmount".format(action))
             unmount()
 
         if action == 'backup':
@@ -261,23 +264,21 @@ def unmount():
 
     if is_a_mount_point(environment.PATH_MOUNTPOINT):
         LOGGER.info("%s is a mount point", environment.PATH_MOUNTPOINT)
-    else:
-        LOGGER.info("%s is NOT a mount point", environment.PATH_MOUNTPOINT)
-
-    if mount_process != None:
-        LOGGER.info("There is a mount process with pid {}".format(mount_process.pid))
-    else:
-        LOGGER.info("There is no mount_process")
-
-    if is_a_mount_point(environment.PATH_MOUNTPOINT):
+        if mount_process:
+            LOGGER.info("and there is a mount process with pid {}".format(mount_process.pid))
+        else:
+            LOGGER.info("but there is no mount process")
         LOGGER.info("calling borg_commands.unmount()")
         borg_commands.unmount()
+    else:
+        LOGGER.info("%s is NOT a mount point", environment.PATH_MOUNTPOINT)
 
     mount_process = None
 
 
 def mount(forced=False):
     global mount_process
+    LOGGER.info("worker.mount({})".format(forced))
 
     if not forced and not is_allowed_to_remount:
         LOGGER.info("Currently not allowed to mount...")
@@ -289,6 +290,7 @@ def mount(forced=False):
         return
 
     try:
+        LOGGER.info("worker.mount: first calling unmount")
         unmount()
         LOGGER.info("Now mounting offsite archive")
         mount_process = borg_commands.mount(borg_commands.REMOTE_REPO)
