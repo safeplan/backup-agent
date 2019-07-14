@@ -134,7 +134,7 @@ def mount(repo):
     with open(log_file_path, mode='a') as file:
         file.write("\n{}\n".format(datetime.now().isoformat()))
 
-    cmd = "borg mount --debug --foreground --strip-components 3 -o nonempty,allow_other {repo} {mount_point} > {log} 2>&1 </dev/null".format(
+    cmd = "borg mount --debug --foreground --strip-components 3 -o nonempty,allow_other {repo} {mount_point} >> {log} 2>&1 </dev/null".format(
         repo=repo,
         mount_point=environment.PATH_MOUNTPOINT,
         log=log_file_path)
