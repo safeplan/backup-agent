@@ -101,7 +101,7 @@ def create_archive(repo, archive_name):
     Creates an archive
     """
 
-    cmd = "borg create --remote-ratelimit 262144 --list --stats --show-version --show-rc {repo}::{archive_name} {backup_path} > {log_dir}/backup_{archive_name}.log 2>&1 </dev/null".format(
+    cmd = "borg create --remote-ratelimit 2097152 --list --stats --show-version --show-rc {repo}::{archive_name} {backup_path} > {log_dir}/backup_{archive_name}.log 2>&1 </dev/null".format(
         repo=repo,
         archive_name=archive_name,
         backup_path=environment.PATH_BACKUP,
