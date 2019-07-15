@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir borgbackup==1.1.9 llfuse
+RUN pip install --no-cache-dir borgbackup==1.1.10 llfuse
 RUN echo "user_allow_other" >> /etc/fuse.conf
 
 VOLUME ["/var/safeplan/backup" , "/var/safeplan/config", "/var/safeplan/repo", "/var/safeplan/work", "/root/.ssh" , "/var/safeplan/history"]
