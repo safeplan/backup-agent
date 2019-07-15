@@ -116,7 +116,7 @@ def do_work():
                 LOGGER.info("Starting backup")
                 update_backup_status_file("{} backup in progress".format(datetime.now().isoformat()))
                 borg_commands.break_lock(borg_commands.REMOTE_REPO)
-                archive_name = current_timestamp.strftime("%Y.%m.%d at %H_%M_%S")
+                archive_name = current_timestamp.strftime("%Y.%m.%d at %H-%M-%S")
                 offsite_archive_logfile_name = os.path.join(environment.PATH_WORK, "backup_{}.log".format(archive_name))
                 offsite_archive_process = borg_commands.create_archive(borg_commands.REMOTE_REPO, archive_name)
                 offsite_archive_process_started = datetime.now()
