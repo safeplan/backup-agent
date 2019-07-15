@@ -129,17 +129,12 @@ def mount(repo):
     """
     Mounts the local archive
     """
-
-    log_file_path = "{}/mount.log".format(environment.PATH_WORK)
-    with open(log_file_path, mode='a') as file:
-        file.write("\n{}\n".format(datetime.now().isoformat()))
-
-    cmd = "borg mount --debug --foreground --strip-components 3 -o nonempty,allow_other {repo} {mount_point} >> {log} 2>&1 </dev/null".format(
+    cmd = "while true; do borg mount --debug --foreground --strip-components 3 -o nonempty,allow_other {repo} {mount_point} >> {log_file_path} 2>&1 </dev/null; if [[ $? == 0 ]]; then break; fi; sleep 5; borg umount {mount_point}; done".format(
         repo=repo,
         mount_point=environment.PATH_MOUNTPOINT,
-        log=log_file_path)
+        log_file_path="{}/mount.log".format(environment.PATH_WORK))
     LOGGER.info(cmd)
-    process = subprocess.Popen(cmd, shell=True, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(cmd, shell=True, executable="/bin/bash", stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     return process
 
 

@@ -38,6 +38,8 @@ COPY api /usr/src/app
 
 EXPOSE 8080
 ENV TZ=Europe/Vienna
+ENV BORG_RSH="ssh -o BatchMode=yes -o ServerAliveInterval=10 -o ServerAliveCountMax=30"
+ENV BORG_MOUNT_DATA_CACHE_ENTRIES="10"
 
 ENTRYPOINT ["python3"]
 
