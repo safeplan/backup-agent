@@ -80,6 +80,22 @@ def create_rsa_keys():
         LOGGER.info("RSA keys have already been created, reusing existing RSA keys")
 
 
+def self_check():
+    errors = []
+    if not os.path.exists(environment.PATH_WORK):
+        errors.append("work directory {} does not exist".format(environment.PATH_WORK))
+    if not os.path.exists(environment.PATH_CONFIG):
+        errors.append("config directory {} does not exist".format(environment.PATH_CONFIG))
+    if not os.path.exists(environment.PATH_BACKUP):
+        errors.append("backup directory {} does not exist".format(environment.PATH_BACKUP))
+    if not errors:
+        cc.report_to_control_center("incident", "self check passed")
+        return True
+    else:
+        cc.report_to_control_center("fail", "self check failed: {}".format(errors))
+        return False
+
+
 def initialize():
     """
     Initializes the device
@@ -90,6 +106,9 @@ def initialize():
     with open("__buildnumber.txt", "r") as bfile:
         build_number = bfile.read()
     cc.report_to_control_center("incident", "backup-agent version {} starting up - initializing device".format(build_number))
+
+    if not self_check():
+        return
 
     if not has_rsa_keys():
         create_rsa_keys()
