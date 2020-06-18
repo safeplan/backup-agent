@@ -27,15 +27,15 @@ ajv@^4.7.0:
     co "^4.6.0"
     json-stable-stringify "^1.0.1"
 
-angular-translate@~2.15.1:
-  version "2.15.2"
-  resolved "https://registry.yarnpkg.com/angular-translate/-/angular-translate-2.15.2.tgz#f9a3c2b8d5daeb7d76c9e2c01ff3c3d57fe12b90"
+angular-translate@~2.18.1:
+  version "2.18.2"
+  resolved "https://registry.yarnpkg.com/angular-translate/-/angular-translate-2.18.2.tgz#2a26653d179f7043c0ffa66fdf65155d01c82e06"
   dependencies:
-    angular ">=1.2.26 <=1.6"
+    angular "^1.7.9"
 
-"angular@>=1.2.26 <=1.6", angular@^1.6.7:
-  version "1.6.7"
-  resolved "https://registry.yarnpkg.com/angular/-/angular-1.6.7.tgz#0f89837dae1776b01ccb1fa2096db0d9373d9897"
+angular@^1.7.9, angular@^1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/angular/-/angular-1.8.0.tgz#b1ec179887869215cab6dfd0df2e42caa65b1b51"
 
 ansi-escapes@^1.1.0:
   version "1.4.0"
