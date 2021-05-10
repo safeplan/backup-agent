@@ -27,15 +27,19 @@ ajv@^4.7.0:
     co "^4.6.0"
     json-stable-stringify "^1.0.1"
 
-angular-translate@~2.15.1:
-  version "2.15.2"
-  resolved "https://registry.yarnpkg.com/angular-translate/-/angular-translate-2.15.2.tgz#f9a3c2b8d5daeb7d76c9e2c01ff3c3d57fe12b90"
+angular-translate@~2.18.1:
+  version "2.18.4"
+  resolved "https://registry.yarnpkg.com/angular-translate/-/angular-translate-2.18.4.tgz#8dba3921cc75d0601891c1f0e9d320aa7cef17bd"
   dependencies:
-    angular ">=1.2.26 <=1.6"
+    angular "^1.8.0"
 
-"angular@>=1.2.26 <=1.6", angular@^1.6.7:
+angular@^1.6.7:
   version "1.6.7"
   resolved "https://registry.yarnpkg.com/angular/-/angular-1.6.7.tgz#0f89837dae1776b01ccb1fa2096db0d9373d9897"
+
+angular@^1.8.0:
+  version "1.8.2"
+  resolved "https://registry.yarnpkg.com/angular/-/angular-1.8.2.tgz#5983bbb5a9fa63e213cb7749199e0d352de3a2f1"
 
 ansi-escapes@^1.1.0:
   version "1.4.0"
@@ -998,8 +1002,8 @@ homedir-polyfill@^1.0.0, homedir-polyfill@^1.0.1:
     parse-passwd "^1.0.0"
 
 hosted-git-info@^2.1.4:
-  version "2.5.0"
-  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.5.0.tgz#6d60e34b3abbc8313062c3b798ef8d901a07af3c"
+  version "2.8.9"
+  resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.9.tgz#dffc0bf9a21c02209090f2aa69429e1414daf3f9"
 
 ignore@^3.1.2:
   version "3.3.7"
